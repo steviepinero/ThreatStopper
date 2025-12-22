@@ -1,0 +1,11 @@
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\bin\Debug\net10.0\Shared.Security.deps.json
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\bin\Debug\net10.0\Shared.Security.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\bin\Debug\net10.0\Shared.Security.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.AssemblyInfoInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.AssemblyInfo.cs
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.csproj.CoreCompileInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\refint\Shared.Security.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\Shared.Security.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Debug\net10.0\ref\Shared.Security.dll

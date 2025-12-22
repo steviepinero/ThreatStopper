@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/ManagementAPI/">
+    <Project Path="src/ManagementAPI/ManagementAPI.Core/ManagementAPI.Core.csproj" />
+    <Project Path="src/ManagementAPI/ManagementAPI.Data/ManagementAPI.Data.csproj" />
+    <Project Path="src/ManagementAPI/ManagementAPI.WebApi/ManagementAPI.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Shared.Models/Shared.Models.csproj" />
+    <Project Path="src/Shared/Shared.Security/Shared.Security.csproj" />
+  </Folder>
+  <Folder Name="/src/WindowsSecurityAgent/">
+    <Project Path="src/WindowsSecurityAgent/WindowsSecurityAgent.Core/WindowsSecurityAgent.Core.csproj" />
+    <Project Path="src/WindowsSecurityAgent/WindowsSecurityAgent.Service/WindowsSecurityAgent.Service.csproj" />
+  </Folder>
+</Solution>

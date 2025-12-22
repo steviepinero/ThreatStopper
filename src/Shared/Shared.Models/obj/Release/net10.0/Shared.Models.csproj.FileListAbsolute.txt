@@ -1,0 +1,11 @@
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\bin\Release\net10.0\Shared.Models.deps.json
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\bin\Release\net10.0\Shared.Models.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\bin\Release\net10.0\Shared.Models.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.AssemblyInfoInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.AssemblyInfo.cs
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.csproj.CoreCompileInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\refint\Shared.Models.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\Shared.Models.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Models\obj\Release\net10.0\ref\Shared.Models.dll

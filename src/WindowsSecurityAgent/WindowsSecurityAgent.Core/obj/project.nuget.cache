@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "bo+CGJpuOzs=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\WindowsSecurityAgent\\WindowsSecurityAgent.Core\\WindowsSecurityAgent.Core.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.1\\microsoft.extensions.dependencyinjection.abstractions.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.1\\microsoft.extensions.logging.abstractions.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.1\\microsoft.net.illink.tasks.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\system.codedom\\10.0.1\\system.codedom.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\system.management\\10.0.1\\system.management.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\10.0.1\\microsoft.netcore.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\10.0.1\\microsoft.windowsdesktop.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\10.0.1\\microsoft.aspnetcore.app.runtime.win-x64.10.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

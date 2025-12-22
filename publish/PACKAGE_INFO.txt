@@ -1,0 +1,219 @@
+====================================================================
+WINDOWS SECURITY PLATFORM - DEPLOYMENT PACKAGE
+====================================================================
+
+Package Created: December 22, 2025
+Version: 1.0.0
+Build Configuration: Release
+Platform: Windows x64
+
+====================================================================
+PACKAGE CONTENTS
+====================================================================
+
+📁 WindowsSecurityAgent/
+   │
+   ├── 📄 WindowsSecurityAgent.Service.exe (73 MB)
+   │   └── Self-contained Windows executable
+   │       ✓ No .NET installation required
+   │       ✓ Includes all dependencies
+   │       ✓ Ready for enterprise deployment
+   │
+   ├── 📄 appsettings.json
+   │   └── Configuration file (MUST BE EDITED BEFORE DEPLOYMENT)
+   │
+   ├── 📄 QUICK_START.txt
+   │   └── Quick reference for installation
+   │
+   ├── 📄 README.md
+   │   └── Complete deployment documentation
+   │
+   ├── 📄 DEPLOYMENT_CONFIG.txt
+   │   └── Detailed configuration guide
+   │
+   ├── 📜 Install-Agent.ps1
+   │   └── PowerShell script to install agent on single computer
+   │
+   ├── 📜 Uninstall-Agent.ps1
+   │   └── PowerShell script to remove agent
+   │
+   └── 📜 Deploy-ToRemoteComputers.ps1
+       └── PowerShell script for bulk deployment
+
+📄 DEPLOYMENT_GUIDE.md
+   └── Complete guide for deploying entire platform
+       (API, Portal, and Agents)
+
+====================================================================
+WHAT THIS PACKAGE DOES
+====================================================================
+
+The Windows Security Agent is an enterprise endpoint security solution
+that connects to your Management API to:
+
+✓ Monitor process creation and application installations
+✓ Enforce security policies (whitelist/blacklist)
+✓ Block unauthorized software installations
+✓ Report security events to central dashboard
+✓ Validate digital signatures and publishers
+✓ Protect critical system directories
+
+====================================================================
+BEFORE YOU DEPLOY
+====================================================================
+
+⚠️ CRITICAL: You MUST configure appsettings.json before deployment!
+
+Required Configuration:
+1. Management API URL (where the agent connects)
+2. Encryption Key (for local policy cache)
+3. Agent credentials (API key)
+
+See QUICK_START.txt for step-by-step instructions.
+
+====================================================================
+DEPLOYMENT OPTIONS
+====================================================================
+
+✅ Single Computer
+   └── Run: Install-Agent.ps1
+
+✅ Multiple Computers (Remote)
+   └── Run: Deploy-ToRemoteComputers.ps1 -ComputerListFile "computers.txt"
+
+✅ Group Policy (Active Directory)
+   └── Copy to network share, create GPO with startup script
+
+✅ SCCM/Configuration Manager
+   └── Create application package with Install-Agent.ps1
+
+✅ Microsoft Intune
+   └── Package as Win32 app and deploy to device groups
+
+✅ PDQ Deploy
+   └── Create package with PowerShell step
+
+====================================================================
+SYSTEM REQUIREMENTS
+====================================================================
+
+Operating System:
+  • Windows 10 (version 1809 or later)
+  • Windows 11 (all versions)
+  • Windows Server 2016 or later
+
+Requirements:
+  • Administrator privileges (for installation)
+  • PowerShell 5.1 or later (included in Windows)
+  • Network access to Management API (HTTPS)
+  • Minimum 100 MB disk space
+  • Minimum 256 MB RAM
+
+No Additional Software Required:
+  ✓ .NET Runtime included (self-contained)
+  ✓ All dependencies bundled
+  ✓ No prerequisites to install
+
+====================================================================
+INSTALLATION SUMMARY
+====================================================================
+
+What the installer does:
+1. Copies files to: C:\Program Files\WindowsSecurityAgent
+2. Creates cache directory: C:\ProgramData\WindowsSecurityAgent
+3. Installs Windows Service: "WindowsSecurityAgent"
+4. Configures service to start automatically
+5. Starts the service
+
+Service Details:
+  • Name: WindowsSecurityAgent
+  • Display Name: Windows Security Agent
+  • Startup Type: Automatic
+  • Recovery: Restart on failure
+  • Runs as: LOCAL SYSTEM
+
+====================================================================
+POST-INSTALLATION
+====================================================================
+
+Verify Installation:
+  Get-Service WindowsSecurityAgent
+
+View Logs:
+  Get-EventLog -LogName Application -Source WindowsSecurityAgent -Newest 20
+
+Check Dashboard:
+  • Agent should appear in Admin Portal within 5 minutes
+  • Status should show "Online"
+  • Heartbeat timestamp should update every 5 minutes
+
+====================================================================
+SECURITY NOTES
+====================================================================
+
+🔒 This package contains:
+  • Executable code that runs with SYSTEM privileges
+  • Configuration file with sensitive credentials
+  • Scripts that modify system services
+
+⚠️ Security Best Practices:
+  1. Store package in secure location
+  2. Protect appsettings.json (contains API keys)
+  3. Use HTTPS for Management API (never HTTP)
+  4. Rotate API keys regularly
+  5. Monitor agent logs for suspicious activity
+  6. Test in staging environment before production
+  7. Keep agents updated with latest version
+
+====================================================================
+SUPPORT & TROUBLESHOOTING
+====================================================================
+
+📖 Documentation:
+  • QUICK_START.txt - Fast installation guide
+  • README.md - Complete documentation
+  • DEPLOYMENT_CONFIG.txt - Configuration reference
+  • DEPLOYMENT_GUIDE.md - Full platform deployment
+
+🔧 Common Issues:
+  • Service won't start → Check Event Viewer logs
+  • Agent not in dashboard → Verify API URL and connectivity
+  • Configuration errors → Review appsettings.json syntax
+
+📊 Monitoring:
+  • Windows Event Logs (Application → WindowsSecurityAgent)
+  • Admin Portal dashboard (agent status and heartbeats)
+  • Audit logs (security events and blocks)
+
+====================================================================
+NEXT STEPS
+====================================================================
+
+1. ✏️  Edit appsettings.json with your configuration
+2. 🧪 Test on a single computer first
+3. ✅ Verify agent appears in Admin Portal
+4. 🧪 Test policy enforcement (try to run blocked installer)
+5. 📋 Create deployment plan for enterprise rollout
+6. 🚀 Deploy to production computers
+7. 📊 Monitor agent health and security events
+
+====================================================================
+VERSION INFORMATION
+====================================================================
+
+Agent Version: 1.0.0
+.NET Version: 10.0
+Build Date: December 22, 2025
+Platform: win-x64
+Build Type: Self-contained
+Executable Size: 73 MB (includes runtime)
+
+====================================================================
+
+For detailed deployment instructions, start with QUICK_START.txt
+or see README.md for complete documentation.
+
+Questions? Contact your IT security team.
+
+====================================================================
+

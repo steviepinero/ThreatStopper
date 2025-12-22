@@ -1,0 +1,17 @@
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\WindowsSecurityAgent.Core.deps.json
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\WindowsSecurityAgent.Core.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\WindowsSecurityAgent.Core.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\Shared.Models.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\Shared.Security.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\Shared.Models.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\bin\Release\net10.0\Shared.Security.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.csproj.AssemblyReference.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.AssemblyInfoInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.AssemblyInfo.cs
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.csproj.CoreCompileInputs.cache
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsS.1AF311BC.Up2Date
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\refint\WindowsSecurityAgent.Core.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\WindowsSecurityAgent.Core.pdb
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Core\obj\Release\net10.0\ref\WindowsSecurityAgent.Core.dll

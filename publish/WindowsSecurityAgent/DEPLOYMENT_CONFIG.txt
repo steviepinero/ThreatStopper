@@ -1,0 +1,119 @@
+====================================================================
+WINDOWS SECURITY AGENT - ENTERPRISE DEPLOYMENT CONFIGURATION
+====================================================================
+
+BEFORE DEPLOYMENT, YOU MUST CONFIGURE THE FOLLOWING:
+
+1. MANAGEMENT API URL
+   -------------------
+   Edit appsettings.json:
+   - Set "CloudApi.BaseUrl" to your Management API URL
+   - Example: "https://security-api.yourcompany.com"
+   - For testing: "https://localhost:5001"
+
+2. AGENT CREDENTIALS (Generated per machine or per group)
+   --------------------------------------------------------
+   Each agent needs unique credentials OR use a shared tenant key.
+   
+   Option A - Unique Agent Registration:
+   - Leave AgentId and ApiKey empty
+   - Agent will auto-register on first run
+   - Requires API to support agent registration endpoint
+   
+   Option B - Pre-configured Agent:
+   - Generate a GUID for AgentId
+   - Generate an API key (32+ character random string)
+   - Register agent in Management API first
+   - Configure in appsettings.json
+
+3. ENCRYPTION KEY (Required)
+   --------------------------
+   Generate a 32-byte base64 encryption key:
+   
+   PowerShell command:
+   $bytes = New-Object byte[] 32
+   [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($bytes)
+   [Convert]::ToBase64String($bytes)
+   
+   Set this value in "Agent.EncryptionKey"
+
+4. CACHE DIRECTORY
+   ----------------
+   Default: C:\ProgramData\WindowsSecurityAgent
+   - Agent will create this directory automatically
+   - Requires SYSTEM/Administrator permissions
+   - Stores encrypted policy cache
+
+5. SSL CERTIFICATE VALIDATION
+   ---------------------------
+   Production: Set "SkipCertificateValidation" to false
+   Development/Testing: Can set to true (NOT RECOMMENDED FOR PRODUCTION)
+
+====================================================================
+DEPLOYMENT METHODS
+====================================================================
+
+Method 1: Group Policy (Recommended for Domain)
+------------------------------------------------
+1. Copy WindowsSecurityAgent folder to network share
+2. Create GPO for "Computer Configuration > Startup Scripts"
+3. Use Install-Agent.ps1 script
+4. Deploy to target OUs
+
+Method 2: SCCM/Intune
+---------------------
+1. Package WindowsSecurityAgent folder
+2. Create application deployment
+3. Run Install-Agent.ps1 with silent flag
+4. Deploy to device collections
+
+Method 3: Manual Installation
+------------------------------
+1. Copy folder to target machine
+2. Run Install-Agent.ps1 as Administrator
+3. Verify service is running
+
+Method 4: Remote PowerShell
+---------------------------
+Use Deploy-ToRemoteComputers.ps1 script for bulk deployment
+
+====================================================================
+SYSTEM REQUIREMENTS
+====================================================================
+
+- Windows 10/11 or Windows Server 2016+
+- .NET 10.0 Runtime (included in self-contained build)
+- Administrator privileges for installation
+- Network access to Management API
+- Minimum 100MB disk space
+- Minimum 256MB RAM
+
+====================================================================
+SECURITY CONSIDERATIONS
+====================================================================
+
+1. Protect appsettings.json - Contains sensitive credentials
+2. Use HTTPS for Management API communication
+3. Rotate API keys regularly
+4. Monitor agent logs for suspicious activity
+5. Keep encryption key secure and backed up
+6. Use least-privilege service accounts where possible
+
+====================================================================
+POST-DEPLOYMENT VERIFICATION
+====================================================================
+
+1. Check Windows Service:
+   sc query WindowsSecurityAgent
+
+2. Check Event Logs:
+   Get-EventLog -LogName Application -Source WindowsSecurityAgent -Newest 10
+
+3. Verify API Connection:
+   Check agent appears in Admin Portal dashboard
+
+4. Test Policy Enforcement:
+   Attempt to run blocked installer
+
+====================================================================
+

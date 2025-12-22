@@ -1,0 +1,78 @@
+====================================================================
+WINDOWS SECURITY AGENT - QUICK START GUIDE
+====================================================================
+
+STEP 1: CONFIGURE (REQUIRED)
+----------------------------
+Edit appsettings.json and set:
+
+1. CloudApi.BaseUrl = "https://your-management-api-url.com"
+2. Agent.EncryptionKey = Generate using PowerShell:
+   
+   $bytes = New-Object byte[] 32
+   [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($bytes)
+   [Convert]::ToBase64String($bytes)
+
+3. (Optional) Agent.AgentId and Agent.ApiKey if pre-registering
+
+STEP 2: INSTALL
+---------------
+Open PowerShell as Administrator and run:
+
+    .\Install-Agent.ps1
+
+That's it! The agent will install and start automatically.
+
+STEP 3: VERIFY
+--------------
+Check service status:
+
+    Get-Service WindowsSecurityAgent
+
+Check admin portal - agent should appear within 5 minutes.
+
+====================================================================
+BULK DEPLOYMENT
+====================================================================
+
+Create a text file with computer names (one per line):
+
+    PC001
+    PC002
+    PC003
+
+Then run:
+
+    .\Deploy-ToRemoteComputers.ps1 -ComputerListFile "computers.txt"
+
+====================================================================
+TROUBLESHOOTING
+====================================================================
+
+Service won't start?
+- Check Event Viewer → Application → WindowsSecurityAgent
+- Verify appsettings.json is configured correctly
+- Ensure network connectivity to Management API
+
+Agent not in dashboard?
+- Wait 5 minutes for first heartbeat
+- Check API URL is correct
+- Test connectivity: Test-NetConnection your-api-url.com -Port 443
+
+Need help?
+- See README.md for detailed instructions
+- See DEPLOYMENT_CONFIG.txt for configuration details
+- Check Event Logs for error messages
+
+====================================================================
+UNINSTALL
+====================================================================
+
+    .\Uninstall-Agent.ps1
+
+To also remove files and cache:
+
+    .\Uninstall-Agent.ps1 -RemoveFiles $true -RemoveCache $true
+
+====================================================================
+

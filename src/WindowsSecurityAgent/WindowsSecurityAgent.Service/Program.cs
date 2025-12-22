@@ -1,0 +1,64 @@
+using WindowsSecurityAgent.Service;
+using WindowsSecurityAgent.Core.Monitoring;
+using WindowsSecurityAgent.Core.PolicyEngine;
+using WindowsSecurityAgent.Core.Communication;
+using Shared.Security;
+using Microsoft.Extensions.Logging;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddEventLog(settings =>
+{
+    settings.SourceName = "WindowsSecurityAgent";
+});
+
+// Read configuration
+var config = builder.Configuration;
+var apiBaseUrl = config["CloudApi:BaseUrl"] ?? "https://localhost:5001";
+var agentIdStr = config["Agent:AgentId"] ?? Guid.NewGuid().ToString();
+var agentId = Guid.Parse(agentIdStr);
+var apiKey = config["Agent:ApiKey"] ?? ApiKeyGenerator.GenerateApiKey();
+var encryptionKey = config["Agent:EncryptionKey"] ?? EncryptionHelper.GenerateKey();
+var cacheDirectory = config["Agent:CacheDirectory"] ?? Path.Combine(
+    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+    "WindowsSecurityAgent");
+
+// Register services
+builder.Services.AddSingleton(sp => 
+    new PolicyCache(
+        sp.GetRequiredService<ILogger<PolicyCache>>(),
+        cacheDirectory,
+        encryptionKey));
+
+builder.Services.AddSingleton(sp => 
+    new CloudClient(
+        sp.GetRequiredService<ILogger<CloudClient>>(),
+        apiBaseUrl,
+        apiKey,
+        agentId));
+
+builder.Services.AddSingleton<PolicySyncService>();
+builder.Services.AddSingleton(sp => 
+    new AuditReporter(
+        sp.GetRequiredService<ILogger<AuditReporter>>(),
+        sp.GetRequiredService<CloudClient>(),
+        agentId));
+
+builder.Services.AddSingleton<PolicyEnforcer>();
+builder.Services.AddSingleton<ProcessMonitor>();
+builder.Services.AddSingleton<FileSystemMonitor>();
+
+// Register the main worker service
+builder.Services.AddHostedService<AgentWorker>();
+
+// Configure Windows Service
+builder.Services.AddWindowsService(options =>
+{
+    options.ServiceName = "WindowsSecurityAgent";
+});
+
+var host = builder.Build();
+host.Run();
