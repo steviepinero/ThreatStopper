@@ -20,4 +20,7 @@ public class AuditLogDTO
     public string Details { get; set; } = string.Empty;
     public Guid? PolicyId { get; set; }
     public Guid? RuleId { get; set; }
+    
+    // Agent information
+    public string? AgentMachineName { get; set; }
 }

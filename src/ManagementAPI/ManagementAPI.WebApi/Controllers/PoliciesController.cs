@@ -58,12 +58,37 @@ public class PoliciesController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<PolicyDTO>> UpdatePolicy(Guid id, [FromQuery] Guid tenantId, [FromBody] PolicyDTO policy)
     {
-        var updated = await _policyService.UpdatePolicyAsync(id, tenantId, policy);
-        
-        if (updated == null)
-            return NotFound();
+        try
+        {
+            if (policy == null)
+            {
+                _logger.LogWarning("UpdatePolicy called with null policy DTO for policy {PolicyId}", id);
+                return BadRequest("Policy data is required");
+            }
 
-        return Ok(updated);
+            // Ensure the PolicyId in the DTO matches the route parameter
+            policy.PolicyId = id;
+            
+            _logger.LogInformation("Updating policy {PolicyId} for tenant {TenantId}. IsActive: {IsActive}, Rules count: {RulesCount}", 
+                id, tenantId, policy.IsActive, policy.Rules?.Count ?? 0);
+
+            var updated = await _policyService.UpdatePolicyAsync(id, tenantId, policy);
+            
+            if (updated == null)
+            {
+                _logger.LogWarning("Policy {PolicyId} not found for tenant {TenantId}", id, tenantId);
+                return NotFound();
+            }
+
+            _logger.LogInformation("Successfully updated policy {PolicyId}", id);
+            return Ok(updated);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating policy {PolicyId} for tenant {TenantId}. Exception: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace}", 
+                id, tenantId, ex.GetType().Name, ex.Message, ex.StackTrace);
+            return StatusCode(500, new { error = "An error occurred while updating the policy", message = ex.Message, details = ex.ToString() });
+        }
     }
 
     /// <summary>

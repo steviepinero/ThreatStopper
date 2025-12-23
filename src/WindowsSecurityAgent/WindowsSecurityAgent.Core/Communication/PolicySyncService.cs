@@ -34,9 +34,16 @@ public class PolicySyncService
             
             var policyDTOs = await _cloudClient.GetPoliciesAsync(cancellationToken);
             
+            // Even if no policies are returned, we should still apply URL blocking
+            // to clear any existing blocks if all policies are inactive
             if (!policyDTOs.Any())
             {
                 _logger.LogWarning("No policies received from cloud");
+                // Still apply URL blocking to clear any existing blocks
+                if (_urlBlocker != null)
+                {
+                    await ApplyUrlBlockingAsync(new List<Policy>());
+                }
                 return false;
             }
 

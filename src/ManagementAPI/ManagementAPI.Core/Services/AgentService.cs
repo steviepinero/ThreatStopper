@@ -128,8 +128,9 @@ public class AgentService
         if (agent == null)
             return new List<PolicyDTO>();
 
+        // Return ALL assigned policies (including inactive ones) so the agent can properly clear blocks
+        // when policies are deactivated
         var policies = agent.PolicyAssignments
-            .Where(pa => pa.Policy.IsActive)
             .Select(pa => pa.Policy)
             .Select(p => new PolicyDTO
             {
@@ -170,18 +171,20 @@ public class AgentService
         if (agent == null)
             return null;
 
-        // Get the most recent policy update timestamp for this agent's assigned policies
+        // Get the most recent policy update timestamp for ALL assigned policies (including inactive ones)
+        // This ensures we detect when policies are activated/deactivated
         var lastPolicyUpdate = agent.PolicyAssignments
-            .Where(pa => pa.Policy.IsActive)
             .Select(pa => pa.Policy.UpdatedAt)
             .DefaultIfEmpty(DateTime.MinValue)
             .Max();
 
         // Check if policies have changed since last heartbeat
-        // If any policy was updated more recently than the last heartbeat (with 2 minute buffer for clock skew),
+        // If any policy was updated more recently than the last heartbeat (with 5 minute buffer for clock skew and delays),
         // consider policies as changed
+        // Use a longer buffer to ensure we catch all changes, especially when policies are reactivated
         var policiesChanged = lastPolicyUpdate > DateTime.MinValue && 
-                              lastPolicyUpdate > agent.LastHeartbeat.AddMinutes(-2);
+                              (agent.LastHeartbeat == DateTime.MinValue || 
+                               lastPolicyUpdate > agent.LastHeartbeat.AddMinutes(-5));
 
         agent.Status = heartbeat.Status;
         agent.AgentVersion = heartbeat.AgentVersion;

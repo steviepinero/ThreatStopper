@@ -91,7 +91,8 @@ public class AuditLogService
                 UserName = al.UserName,
                 Details = al.Details,
                 PolicyId = al.PolicyId,
-                RuleId = al.RuleId
+                RuleId = al.RuleId,
+                AgentMachineName = al.Agent.MachineName
             })
             .ToListAsync();
     }

@@ -2,6 +2,7 @@ using ManagementAPI.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Models.DTOs;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace ManagementAPI.Core.Services;
 
@@ -153,45 +154,178 @@ public class PolicyService
     /// </summary>
     public async Task<PolicyDTO?> UpdatePolicyAsync(Guid policyId, Guid tenantId, PolicyDTO policyDto)
     {
-        var policy = await _dbContext.Policies
-            .Include(p => p.Rules)
-            .FirstOrDefaultAsync(p => p.PolicyId == policyId && p.TenantId == tenantId);
-
-        if (policy == null)
-            return null;
-
-        policy.Name = policyDto.Name;
-        policy.Description = policyDto.Description;
-        policy.Mode = policyDto.Mode;
-        policy.IsActive = policyDto.IsActive;
-        policy.Priority = policyDto.Priority;
-        policy.UpdatedAt = DateTime.UtcNow;
-
-        // Remove old rules and add new ones
-        _dbContext.PolicyRules.RemoveRange(policy.Rules);
-        policy.Rules.Clear();
-
-        int order = 0;
-        foreach (var ruleDto in policyDto.Rules)
+        try
         {
-            policy.Rules.Add(new PolicyRule
+            var policy = await _dbContext.Policies
+                .Include(p => p.Rules)
+                .FirstOrDefaultAsync(p => p.PolicyId == policyId && p.TenantId == tenantId);
+
+            if (policy == null)
             {
-                RuleId = Guid.NewGuid(),
-                PolicyId = policy.PolicyId,
-                RuleType = ruleDto.RuleType,
-                Criteria = ruleDto.Criteria,
-                Action = ruleDto.Action,
-                Description = ruleDto.Description,
-                Order = order++,
-                CreatedAt = DateTime.UtcNow
-            });
+                _logger.LogWarning("Policy not found: {PolicyId} for tenant {TenantId}", policyId, tenantId);
+                return null;
+            }
+
+            // Update policy properties - only update if provided (allow partial updates)
+            if (!string.IsNullOrWhiteSpace(policyDto.Name))
+                policy.Name = policyDto.Name;
+            
+            if (policyDto.Description != null)
+                policy.Description = policyDto.Description;
+            
+            // Always update these fields if provided in DTO
+            policy.Mode = policyDto.Mode;
+            policy.IsActive = policyDto.IsActive;
+            policy.Priority = policyDto.Priority;
+            policy.UpdatedAt = DateTime.UtcNow;
+
+            // Handle rules - only update if Rules array is provided and not null
+            // Check if rules actually changed to avoid unnecessary updates
+            bool rulesChanged = false;
+            if (policyDto.Rules != null)
+            {
+                // Compare rule counts and content
+                if (policyDto.Rules.Count != policy.Rules.Count)
+                {
+                    rulesChanged = true;
+                }
+                else
+                {
+                    // Compare each rule to see if anything changed
+                    var existingRules = policy.Rules.OrderBy(r => r.Order).ToList();
+                    var newRules = policyDto.Rules.ToList();
+                    
+                    for (int i = 0; i < existingRules.Count && !rulesChanged; i++)
+                    {
+                        if (existingRules[i].RuleType != newRules[i].RuleType ||
+                            existingRules[i].Criteria != (newRules[i].Criteria ?? string.Empty) ||
+                            existingRules[i].Action != newRules[i].Action ||
+                            existingRules[i].Description != (newRules[i].Description ?? string.Empty))
+                        {
+                            rulesChanged = true;
+                        }
+                    }
+                }
+            }
+
+            if (policyDto.Rules != null && rulesChanged)
+            {
+                // Delete existing rules directly from database to avoid tracking issues
+                var existingRules = await _dbContext.PolicyRules
+                    .Where(r => r.PolicyId == policy.PolicyId)
+                    .ToListAsync();
+                
+                _dbContext.PolicyRules.RemoveRange(existingRules);
+                
+                // Clear the navigation property
+                policy.Rules.Clear();
+
+                // Add new rules
+                int order = 0;
+                foreach (var ruleDto in policyDto.Rules)
+                {
+                    if (ruleDto != null)
+                    {
+                        var newRule = new PolicyRule
+                        {
+                            RuleId = Guid.NewGuid(),
+                            PolicyId = policy.PolicyId,
+                            RuleType = ruleDto.RuleType,
+                            Criteria = ruleDto.Criteria ?? string.Empty,
+                            Action = ruleDto.Action,
+                            Description = ruleDto.Description ?? string.Empty,
+                            Order = order++,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _dbContext.PolicyRules.Add(newRule);
+                        policy.Rules.Add(newRule);
+                    }
+                }
+            }
+            // If Rules is null or only IsActive changed, keep existing rules (partial update scenario)
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency exception updating policy {PolicyId}. The policy may have been modified or deleted.", policyId);
+                
+                // Reload the entity to get current state
+                await _dbContext.Entry(policy).ReloadAsync();
+                
+                // Check if policy still exists
+                if (await _dbContext.Policies.AnyAsync(p => p.PolicyId == policyId && p.TenantId == tenantId))
+                {
+                    // Policy exists, re-apply changes
+                    if (!string.IsNullOrWhiteSpace(policyDto.Name))
+                        policy.Name = policyDto.Name;
+                    
+                    if (policyDto.Description != null)
+                        policy.Description = policyDto.Description;
+                    
+                    policy.Mode = policyDto.Mode;
+                    policy.IsActive = policyDto.IsActive;
+                    policy.Priority = policyDto.Priority;
+                    policy.UpdatedAt = DateTime.UtcNow;
+
+                    // Re-handle rules if provided
+                    if (policyDto.Rules != null)
+                    {
+                        // Delete existing rules
+                        var existingRules = await _dbContext.PolicyRules
+                            .Where(r => r.PolicyId == policy.PolicyId)
+                            .ToListAsync();
+                        _dbContext.PolicyRules.RemoveRange(existingRules);
+                        
+                        // Reload rules collection
+                        await _dbContext.Entry(policy).Collection(p => p.Rules).LoadAsync();
+                        policy.Rules.Clear();
+
+                        // Add new rules
+                        int order = 0;
+                        foreach (var ruleDto in policyDto.Rules)
+                        {
+                            if (ruleDto != null)
+                            {
+                                var newRule = new PolicyRule
+                                {
+                                    RuleId = Guid.NewGuid(),
+                                    PolicyId = policy.PolicyId,
+                                    RuleType = ruleDto.RuleType,
+                                    Criteria = ruleDto.Criteria ?? string.Empty,
+                                    Action = ruleDto.Action,
+                                    Description = ruleDto.Description ?? string.Empty,
+                                    Order = order++,
+                                    CreatedAt = DateTime.UtcNow
+                                };
+                                _dbContext.PolicyRules.Add(newRule);
+                                policy.Rules.Add(newRule);
+                            }
+                        }
+                    }
+
+                    // Retry save
+                    await _dbContext.SaveChangesAsync();
+                    _logger.LogInformation("Policy {PolicyId} updated successfully after retry", policyId);
+                }
+                else
+                {
+                    _logger.LogWarning("Policy {PolicyId} was deleted during update", policyId);
+                    return null;
+                }
+            }
+
+            _logger.LogInformation("Policy updated: {PolicyName} (ID: {PolicyId})", policy.Name, policy.PolicyId);
+
+            return await GetPolicyByIdAsync(policyId, tenantId);
         }
-
-        await _dbContext.SaveChangesAsync();
-
-        _logger.LogInformation("Policy updated: {PolicyName} (ID: {PolicyId})", policy.Name, policy.PolicyId);
-
-        return await GetPolicyByIdAsync(policyId, tenantId);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating policy {PolicyId} for tenant {TenantId}", policyId, tenantId);
+            throw;
+        }
     }
 
     /// <summary>
