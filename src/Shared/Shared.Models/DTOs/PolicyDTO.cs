@@ -15,6 +15,7 @@ public class PolicyDTO
     public bool IsActive { get; set; }
     public int Priority { get; set; }
     public List<PolicyRuleDTO> Rules { get; set; } = new();
+    public List<Guid>? AssignedAgentIds { get; set; } // Optional: if null, assign to all agents; if empty list, assign to none
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

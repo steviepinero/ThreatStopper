@@ -28,6 +28,7 @@ public class PolicyService
         return await _dbContext.Policies
             .Where(p => p.TenantId == tenantId)
             .Include(p => p.Rules)
+            .Include(p => p.AgentAssignments)
             .Select(p => new PolicyDTO
             {
                 PolicyId = p.PolicyId,
@@ -46,7 +47,8 @@ public class PolicyService
                     Criteria = r.Criteria,
                     Action = r.Action,
                     Description = r.Description
-                }).ToList()
+                }).ToList(),
+                AssignedAgentIds = p.AgentAssignments.Select(aa => aa.AgentId).ToList()
             })
             .OrderByDescending(p => p.Priority)
             .ToListAsync();
@@ -59,6 +61,7 @@ public class PolicyService
     {
         var policy = await _dbContext.Policies
             .Include(p => p.Rules)
+            .Include(p => p.AgentAssignments)
             .FirstOrDefaultAsync(p => p.PolicyId == policyId && p.TenantId == tenantId);
 
         if (policy == null)
@@ -82,7 +85,8 @@ public class PolicyService
                 Criteria = r.Criteria,
                 Action = r.Action,
                 Description = r.Description
-            }).ToList()
+            }).ToList(),
+            AssignedAgentIds = policy.AgentAssignments.Select(aa => aa.AgentId).ToList()
         };
     }
 
@@ -124,27 +128,44 @@ public class PolicyService
         _dbContext.Policies.Add(policy);
         await _dbContext.SaveChangesAsync();
 
-        // Auto-assign policy to all agents in the tenant
-        var agentIds = await _dbContext.Agents
-            .Where(a => a.TenantId == tenantId)
-            .Select(a => a.AgentId)
-            .ToListAsync();
-
-        foreach (var agentId in agentIds)
+        // Assign policy to specified agents, or all agents if not specified
+        List<Guid> agentIdsToAssign;
+        if (policyDto.AssignedAgentIds != null)
         {
-            _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+            // Assign only to specified agents
+            agentIdsToAssign = policyDto.AssignedAgentIds;
+        }
+        else
+        {
+            // Default: assign to all agents in the tenant
+            agentIdsToAssign = await _dbContext.Agents
+                .Where(a => a.TenantId == tenantId)
+                .Select(a => a.AgentId)
+                .ToListAsync();
+        }
+
+        foreach (var agentId in agentIdsToAssign)
+        {
+            // Check if assignment already exists
+            var exists = await _dbContext.AgentPolicyAssignments
+                .AnyAsync(apa => apa.AgentId == agentId && apa.PolicyId == policy.PolicyId);
+            
+            if (!exists)
             {
-                AssignmentId = Guid.NewGuid(),
-                AgentId = agentId,
-                PolicyId = policy.PolicyId,
-                AssignedAt = DateTime.UtcNow
-            });
+                _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+                {
+                    AssignmentId = Guid.NewGuid(),
+                    AgentId = agentId,
+                    PolicyId = policy.PolicyId,
+                    AssignedAt = DateTime.UtcNow
+                });
+            }
         }
 
         await _dbContext.SaveChangesAsync();
 
         _logger.LogInformation("Policy created: {PolicyName} (ID: {PolicyId}), assigned to {AgentCount} agents", 
-            policy.Name, policy.PolicyId, agentIds.Count);
+            policy.Name, policy.PolicyId, agentIdsToAssign.Count);
 
         return await GetPolicyByIdAsync(policy.PolicyId, tenantId) ?? policyDto;
     }
@@ -156,9 +177,10 @@ public class PolicyService
     {
         try
         {
-            var policy = await _dbContext.Policies
-                .Include(p => p.Rules)
-                .FirstOrDefaultAsync(p => p.PolicyId == policyId && p.TenantId == tenantId);
+        var policy = await _dbContext.Policies
+            .Include(p => p.Rules)
+            .Include(p => p.AgentAssignments)
+            .FirstOrDefaultAsync(p => p.PolicyId == policyId && p.TenantId == tenantId);
 
             if (policy == null)
             {
@@ -243,6 +265,49 @@ public class PolicyService
                 }
             }
             // If Rules is null or only IsActive changed, keep existing rules (partial update scenario)
+
+            // Handle agent assignments if provided
+            if (policyDto.AssignedAgentIds != null)
+            {
+                // Get current assignments
+                var currentAssignments = await _dbContext.AgentPolicyAssignments
+                    .Where(apa => apa.PolicyId == policy.PolicyId)
+                    .ToListAsync();
+
+                var currentAgentIds = currentAssignments.Select(a => a.AgentId).ToList();
+                var newAgentIds = policyDto.AssignedAgentIds;
+
+                // Remove assignments that are no longer in the list
+                var toRemove = currentAssignments
+                    .Where(a => !newAgentIds.Contains(a.AgentId))
+                    .ToList();
+                _dbContext.AgentPolicyAssignments.RemoveRange(toRemove);
+
+                // Add new assignments
+                foreach (var agentId in newAgentIds)
+                {
+                    if (!currentAgentIds.Contains(agentId))
+                    {
+                        // Verify agent belongs to the same tenant
+                        var agent = await _dbContext.Agents
+                            .FirstOrDefaultAsync(a => a.AgentId == agentId && a.TenantId == tenantId);
+                        
+                        if (agent != null)
+                        {
+                            _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+                            {
+                                AssignmentId = Guid.NewGuid(),
+                                AgentId = agentId,
+                                PolicyId = policy.PolicyId,
+                                AssignedAt = DateTime.UtcNow
+                            });
+                        }
+                    }
+                }
+
+                _logger.LogInformation("Updated agent assignments for policy {PolicyId}: {Count} agents assigned", 
+                    policyId, newAgentIds.Count);
+            }
 
             try
             {
