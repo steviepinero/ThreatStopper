@@ -184,4 +184,15 @@ Write-Info "  Stop Service:  Stop-Service $ServiceName"
 Write-Info "  View Logs:     Get-EventLog -LogName Application -Source WindowsSecurityAgent -Newest 20"
 Write-Info "  Uninstall:     .\Uninstall-Agent.ps1"
 Write-Host ""
+
+# Check if tray monitor exists
+$trayExePath = Join-Path $InstallPath "WindowsSecurityAgent.TrayIcon.exe"
+if (Test-Path $trayExePath) {
+    Write-Info "Tray Monitor Available:"
+    Write-Info "  Start Tray Icon:  .\Start-TrayMonitor.ps1"
+    Write-Info "  Add to Startup:   .\Start-TrayMonitor.ps1 -InstallStartup"
+    Write-Info "  The tray icon shows service status and allows quick control"
+    Write-Host ""
+}
+
 Write-Success "Installation script completed successfully!"
