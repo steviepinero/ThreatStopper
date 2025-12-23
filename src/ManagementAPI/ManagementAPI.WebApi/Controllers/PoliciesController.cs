@@ -31,7 +31,7 @@ public class PoliciesController : ControllerBase
     /// <summary>
     /// Gets a specific policy by ID
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<ActionResult<PolicyDTO>> GetPolicy(Guid id, [FromQuery] Guid tenantId)
     {
         var policy = await _policyService.GetPolicyByIdAsync(id, tenantId);
@@ -55,7 +55,7 @@ public class PoliciesController : ControllerBase
     /// <summary>
     /// Updates an existing policy
     /// </summary>
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     public async Task<ActionResult<PolicyDTO>> UpdatePolicy(Guid id, [FromQuery] Guid tenantId, [FromBody] PolicyDTO policy)
     {
         var updated = await _policyService.UpdatePolicyAsync(id, tenantId, policy);
@@ -69,7 +69,7 @@ public class PoliciesController : ControllerBase
     /// <summary>
     /// Deletes a policy
     /// </summary>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeletePolicy(Guid id, [FromQuery] Guid tenantId)
     {
         var success = await _policyService.DeletePolicyAsync(id, tenantId);
@@ -83,7 +83,7 @@ public class PoliciesController : ControllerBase
     /// <summary>
     /// Assigns a policy to an agent
     /// </summary>
-    [HttpPost("{policyId}/agents/{agentId}")]
+    [HttpPost("{policyId:guid}/agents/{agentId:guid}")]
     public async Task<IActionResult> AssignPolicyToAgent(Guid policyId, Guid agentId)
     {
         var success = await _policyService.AssignPolicyToAgentAsync(agentId, policyId);
@@ -93,7 +93,7 @@ public class PoliciesController : ControllerBase
     /// <summary>
     /// Unassigns a policy from an agent
     /// </summary>
-    [HttpDelete("{policyId}/agents/{agentId}")]
+    [HttpDelete("{policyId:guid}/agents/{agentId:guid}")]
     public async Task<IActionResult> UnassignPolicyFromAgent(Guid policyId, Guid agentId)
     {
         var success = await _policyService.UnassignPolicyFromAgentAsync(agentId, policyId);
@@ -102,5 +102,15 @@ public class PoliciesController : ControllerBase
             return NotFound();
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Syncs all policy assignments - ensures all agents have all active policies assigned
+    /// </summary>
+    [HttpPost("sync-assignments")]
+    public async Task<ActionResult> SyncAllPolicyAssignments([FromQuery] Guid tenantId)
+    {
+        var newAssignments = await _policyService.SyncAllPolicyAssignmentsAsync(tenantId);
+        return Ok(new { NewAssignmentsCreated = newAssignments });
     }
 }

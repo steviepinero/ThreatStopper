@@ -123,7 +123,27 @@ public class PolicyService
         _dbContext.Policies.Add(policy);
         await _dbContext.SaveChangesAsync();
 
-        _logger.LogInformation("Policy created: {PolicyName} (ID: {PolicyId})", policy.Name, policy.PolicyId);
+        // Auto-assign policy to all agents in the tenant
+        var agentIds = await _dbContext.Agents
+            .Where(a => a.TenantId == tenantId)
+            .Select(a => a.AgentId)
+            .ToListAsync();
+
+        foreach (var agentId in agentIds)
+        {
+            _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+            {
+                AssignmentId = Guid.NewGuid(),
+                AgentId = agentId,
+                PolicyId = policy.PolicyId,
+                AssignedAt = DateTime.UtcNow
+            });
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Policy created: {PolicyName} (ID: {PolicyId}), assigned to {AgentCount} agents", 
+            policy.Name, policy.PolicyId, agentIds.Count);
 
         return await GetPolicyByIdAsync(policy.PolicyId, tenantId) ?? policyDto;
     }
@@ -238,5 +258,51 @@ public class PolicyService
         _logger.LogInformation("Policy {PolicyId} unassigned from agent {AgentId}", policyId, agentId);
 
         return true;
+    }
+
+    /// <summary>
+    /// Syncs all policy assignments for a tenant - ensures all agents have all active policies assigned
+    /// </summary>
+    public async Task<int> SyncAllPolicyAssignmentsAsync(Guid tenantId)
+    {
+        var agents = await _dbContext.Agents
+            .Where(a => a.TenantId == tenantId)
+            .ToListAsync();
+
+        var activePolicies = await _dbContext.Policies
+            .Where(p => p.TenantId == tenantId && p.IsActive)
+            .ToListAsync();
+
+        var existingAssignments = await _dbContext.AgentPolicyAssignments
+            .Where(apa => agents.Select(a => a.AgentId).Contains(apa.AgentId))
+            .ToListAsync();
+
+        var newAssignments = 0;
+
+        foreach (var agent in agents)
+        {
+            foreach (var policy in activePolicies)
+            {
+                var exists = existingAssignments.Any(ea => ea.AgentId == agent.AgentId && ea.PolicyId == policy.PolicyId);
+                if (!exists)
+                {
+                    _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+                    {
+                        AssignmentId = Guid.NewGuid(),
+                        AgentId = agent.AgentId,
+                        PolicyId = policy.PolicyId,
+                        AssignedAt = DateTime.UtcNow
+                    });
+                    newAssignments++;
+                }
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        _logger.LogInformation("Synced policy assignments for tenant {TenantId}: created {NewAssignments} new assignments", 
+            tenantId, newAssignments);
+
+        return newAssignments;
     }
 }

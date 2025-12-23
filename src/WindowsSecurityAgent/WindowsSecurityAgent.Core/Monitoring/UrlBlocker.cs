@@ -68,18 +68,31 @@ public class UrlBlocker
                 newLines.Add(MARKER_START);
                 newLines.Add($"# Last updated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
+                // Extract and deduplicate domains
+                var uniqueDomains = new HashSet<string>();
                 foreach (var url in urlsToBlock)
                 {
                     var domain = ExtractDomain(url);
-                    if (!string.IsNullOrWhiteSpace(domain))
+                    if (!string.IsNullOrWhiteSpace(domain) && IsValidDomain(domain))
                     {
-                        newLines.Add($"127.0.0.1 {domain}");
-                        newLines.Add($"127.0.0.1 www.{domain}");
-                        _logger.LogInformation("Blocked domain: {Domain}", domain);
+                        uniqueDomains.Add(domain);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Skipping invalid domain: {Url} (extracted as: {Domain})", url, domain ?? "(null)");
                     }
                 }
 
+                // Add blocked domains to hosts file
+                foreach (var domain in uniqueDomains.OrderBy(d => d))
+                {
+                    newLines.Add($"127.0.0.1 {domain}");
+                    newLines.Add($"127.0.0.1 www.{domain}");
+                    _logger.LogInformation("Blocked domain: {Domain}", domain);
+                }
+
                 newLines.Add(MARKER_END);
+                _logger.LogInformation("Added {Count} unique domains to hosts file", uniqueDomains.Count);
             }
 
             // Write back to hosts file
@@ -112,8 +125,21 @@ public class UrlBlocker
     {
         try
         {
-            // Remove protocol if present
-            url = url.Replace("http://", "").Replace("https://", "").Replace("www.", "");
+            if (string.IsNullOrWhiteSpace(url))
+                return string.Empty;
+
+            // Normalize to lowercase first for case-insensitive processing
+            url = url.Trim().ToLower();
+
+            // Remove protocol if present (case-insensitive)
+            if (url.StartsWith("http://"))
+            {
+                url = url.Substring(7); // Remove "http://"
+            }
+            else if (url.StartsWith("https://"))
+            {
+                url = url.Substring(8); // Remove "https://"
+            }
 
             // Remove path if present
             var slashIndex = url.IndexOf('/');
@@ -129,12 +155,45 @@ public class UrlBlocker
                 url = url.Substring(0, colonIndex);
             }
 
-            return url.Trim().ToLower();
+            // Remove www. prefix if present (after protocol removal)
+            if (url.StartsWith("www."))
+            {
+                url = url.Substring(4); // Remove "www."
+            }
+
+            return url.Trim();
         }
         catch
         {
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Validates if a string is a valid domain name
+    /// </summary>
+    private bool IsValidDomain(string domain)
+    {
+        if (string.IsNullOrWhiteSpace(domain))
+            return false;
+
+        // Basic validation: must contain at least one dot and be alphanumeric with dots and hyphens
+        if (!domain.Contains('.'))
+            return false;
+
+        // Check for valid characters (letters, numbers, dots, hyphens)
+        foreach (var c in domain)
+        {
+            if (!char.IsLetterOrDigit(c) && c != '.' && c != '-')
+                return false;
+        }
+
+        // Must not start or end with dot or hyphen
+        if (domain.StartsWith('.') || domain.EndsWith('.') || 
+            domain.StartsWith('-') || domain.EndsWith('-'))
+            return false;
+
+        return true;
     }
 
     /// <summary>

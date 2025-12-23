@@ -49,7 +49,12 @@ builder.Services.AddSingleton(sp =>
         sp.GetRequiredService<UrlBlocker>(),
         600)); // Sync every 10 minutes
 
-builder.Services.AddSingleton<PolicySyncService>();
+builder.Services.AddSingleton(sp => 
+    new PolicySyncService(
+        sp.GetRequiredService<ILogger<PolicySyncService>>(),
+        sp.GetRequiredService<CloudClient>(),
+        sp.GetRequiredService<PolicyCache>(),
+        sp.GetRequiredService<UrlBlocker>()));
 builder.Services.AddSingleton(sp => 
     new AuditReporter(
         sp.GetRequiredService<ILogger<AuditReporter>>(),

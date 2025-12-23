@@ -73,8 +73,27 @@ public class AgentService
             _dbContext.Agents.Add(agent);
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Agent registered successfully: {MachineName} (ID: {AgentId})", 
-                registration.MachineName, agent.AgentId);
+            // Auto-assign all active policies for this tenant to the new agent
+            var activePolicyIds = await _dbContext.Policies
+                .Where(p => p.TenantId == registration.TenantId && p.IsActive)
+                .Select(p => p.PolicyId)
+                .ToListAsync();
+
+            foreach (var policyId in activePolicyIds)
+            {
+                _dbContext.AgentPolicyAssignments.Add(new AgentPolicyAssignment
+                {
+                    AssignmentId = Guid.NewGuid(),
+                    AgentId = agent.AgentId,
+                    PolicyId = policyId,
+                    AssignedAt = DateTime.UtcNow
+                });
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            _logger.LogInformation("Agent registered successfully: {MachineName} (ID: {AgentId}), assigned {PolicyCount} policies", 
+                registration.MachineName, agent.AgentId, activePolicyIds.Count);
 
             return new AgentRegistrationResponseDTO
             {

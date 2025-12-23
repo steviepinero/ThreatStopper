@@ -34,7 +34,7 @@ public class AgentsController : ControllerBase
     /// <summary>
     /// Gets policies assigned to an agent
     /// </summary>
-    [HttpGet("{id}/policies")]
+    [HttpGet("{id:guid}/policies")]
     public async Task<ActionResult<List<PolicyDTO>>> GetAgentPolicies(Guid id)
     {
         var policies = await _agentService.GetAgentPoliciesAsync(id);
@@ -44,7 +44,7 @@ public class AgentsController : ControllerBase
     /// <summary>
     /// Updates agent heartbeat
     /// </summary>
-    [HttpPost("{id}/heartbeat")]
+    [HttpPost("{id:guid}/heartbeat")]
     public async Task<ActionResult<HeartbeatResponseDTO>> Heartbeat(Guid id, [FromBody] HeartbeatDTO heartbeat)
     {
         var response = await _agentService.UpdateHeartbeatAsync(id, heartbeat);
@@ -58,7 +58,7 @@ public class AgentsController : ControllerBase
     /// <summary>
     /// Submits audit logs from an agent
     /// </summary>
-    [HttpPost("{id}/audit-logs")]
+    [HttpPost("{id:guid}/audit-logs")]
     public async Task<IActionResult> SubmitAuditLogs(Guid id, [FromBody] List<AuditLogDTO> logs)
     {
         // In production, verify the agent ID matches the authenticated agent
@@ -82,7 +82,7 @@ public class AgentsController : ControllerBase
     /// <summary>
     /// Gets a specific agent by ID
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<ActionResult<AgentDTO>> GetAgent(Guid id, [FromQuery] Guid tenantId)
     {
         var agents = await _agentService.GetAgentsByTenantAsync(tenantId);

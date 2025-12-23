@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WindowsSecurityAgent.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+81bb2317d762d4f02e9e955d1233809a939a61ee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bfff9b1d9e2e1256f6b1e94a5d4c450768d2a60")]
 [assembly: System.Reflection.AssemblyProductAttribute("WindowsSecurityAgent.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WindowsSecurityAgent.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

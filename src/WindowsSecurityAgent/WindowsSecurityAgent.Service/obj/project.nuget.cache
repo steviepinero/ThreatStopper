@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "PjLh/WqO19c=",
+  "dgSpecHash": "R9COtJEu0K4=",
   "success": true,
   "projectFilePath": "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\WindowsSecurityAgent\\WindowsSecurityAgent.Service\\WindowsSecurityAgent.Service.csproj",
   "expectedPackageFiles": [
@@ -32,14 +32,10 @@
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.options\\10.0.1\\microsoft.extensions.options.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.1\\microsoft.extensions.options.configurationextensions.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.1\\microsoft.extensions.primitives.10.0.1.nupkg.sha512",
-    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.1\\microsoft.net.illink.tasks.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\system.codedom\\10.0.1\\system.codedom.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.1\\system.diagnostics.eventlog.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\system.management\\10.0.1\\system.management.10.0.1.nupkg.sha512",
-    "C:\\Users\\stevi\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.1\\system.serviceprocess.servicecontroller.10.0.1.nupkg.sha512",
-    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\10.0.1\\microsoft.netcore.app.runtime.win-x64.10.0.1.nupkg.sha512",
-    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\10.0.1\\microsoft.windowsdesktop.app.runtime.win-x64.10.0.1.nupkg.sha512",
-    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\10.0.1\\microsoft.aspnetcore.app.runtime.win-x64.10.0.1.nupkg.sha512"
+    "C:\\Users\\stevi\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.1\\system.serviceprocess.servicecontroller.10.0.1.nupkg.sha512"
   ],
   "logs": []
 }
