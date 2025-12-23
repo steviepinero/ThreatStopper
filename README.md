@@ -1,11 +1,12 @@
-# Windows Security Platform
+# 🛡️ ThreatStopper
 
-An enterprise-grade Windows security application designed to replace complex Group Policy configurations with an intuitive, cloud-based management system. Similar to ThreatLocker, this platform provides application installation control, security monitoring, and centralized policy management.
+An enterprise-grade endpoint protection platform designed to replace complex Group Policy configurations with an intuitive, cloud-based management system. ThreatStopper provides comprehensive application control, URL blocking, security monitoring, and centralized policy management for Windows environments.
 
 ## 🚀 Features
 
 ### Core Security Features
-- **Application Installation Blocking**: Block unauthorized software installations using multi-layered detection
+- **Application Control**: Block unauthorized software installations using multi-layered detection
+- **URL/Domain Blocking**: Block malicious websites and domains at the network level
 - **Process Monitoring**: Real-time monitoring of process creation via WMI
 - **File System Monitoring**: Track changes to protected directories (Program Files, System32)
 - **Policy Engine**: Support for both whitelist and blacklist modes

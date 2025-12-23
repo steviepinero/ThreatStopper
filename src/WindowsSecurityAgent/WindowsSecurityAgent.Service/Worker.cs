@@ -3,6 +3,7 @@ using WindowsSecurityAgent.Core.PolicyEngine;
 using WindowsSecurityAgent.Core.Communication;
 using Shared.Models.Enums;
 using Shared.Models.DTOs;
+using Microsoft.Extensions.Configuration;
 
 namespace WindowsSecurityAgent.Service;
 
@@ -20,7 +21,7 @@ public class AgentWorker : BackgroundService
     private readonly CloudClient _cloudClient;
     private readonly IConfiguration _configuration;
 
-    private readonly TimeSpan _policySyncInterval = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _policySyncInterval;
     private readonly TimeSpan _heartbeatInterval = TimeSpan.FromMinutes(1);
     private readonly TimeSpan _auditFlushInterval = TimeSpan.FromSeconds(30);
 
@@ -42,6 +43,12 @@ public class AgentWorker : BackgroundService
         _auditReporter = auditReporter;
         _cloudClient = cloudClient;
         _configuration = configuration;
+        
+        // Read policy sync interval from configuration, default to 5 minutes
+        var syncIntervalSeconds = configuration.GetValue<int>("Agent:PolicySyncIntervalSeconds", 300);
+        _policySyncInterval = TimeSpan.FromSeconds(syncIntervalSeconds);
+        _logger.LogInformation("Policy sync interval set to {Interval} seconds ({Minutes} minutes)", 
+            syncIntervalSeconds, syncIntervalSeconds / 60);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -209,7 +216,18 @@ public class AgentWorker : BackgroundService
                 };
 
                 _logger.LogDebug("Sending heartbeat...");
-                await _cloudClient.SendHeartbeatAsync(heartbeat, cancellationToken);
+                var response = await _cloudClient.SendHeartbeatAsync(heartbeat, cancellationToken);
+                
+                // If policies have changed, trigger immediate sync
+                if (response?.PoliciesChanged == true)
+                {
+                    _logger.LogInformation("Policies changed detected via heartbeat, triggering immediate sync...");
+                    var syncSuccess = await _policySyncService.SyncPoliciesAsync(cancellationToken);
+                    if (syncSuccess)
+                    {
+                        _auditReporter.RecordEvent(EventType.PolicyUpdated, "Policies synced immediately after change detected");
+                    }
+                }
             }
             catch (OperationCanceledException)
             {

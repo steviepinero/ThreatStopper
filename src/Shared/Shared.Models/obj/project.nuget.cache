@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "ZCTNCGf0AE8=",
+  "dgSpecHash": "LRQNwTaV7pY=",
   "success": true,
   "projectFilePath": "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\Shared\\Shared.Models\\Shared.Models.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.1\\microsoft.net.illink.tasks.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\10.0.1\\microsoft.netcore.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\10.0.1\\microsoft.windowsdesktop.app.runtime.win-x64.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\10.0.1\\microsoft.aspnetcore.app.runtime.win-x64.10.0.1.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -14,7 +14,7 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "=====================================================================" -ForegroundColor Cyan
-Write-Host "Windows Security Agent - Configuration Script" -ForegroundColor Cyan
+Write-Host "ThreatStopper Agent - Configuration Script" -ForegroundColor Cyan
 Write-Host "=====================================================================" -ForegroundColor Cyan
 Write-Host ""
 

@@ -1,0 +1,7 @@
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\appsettings.Development.json
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\appsettings.json
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\WindowsSecurityAgent.Service.pdb
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\WindowsSecurityAgent.Core.pdb
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\Shared.Models.pdb
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\Shared.Security.pdb
+C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent-Updated\WindowsSecurityAgent.Service.exe

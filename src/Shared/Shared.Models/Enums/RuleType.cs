@@ -28,5 +28,15 @@ public enum RuleType
     /// <summary>
     /// Match by file name or pattern
     /// </summary>
-    FileName = 4
+    FileName = 4,
+    
+    /// <summary>
+    /// Block/allow specific URLs or domains (supports wildcards)
+    /// </summary>
+    Url = 5,
+    
+    /// <summary>
+    /// Block/allow entire domain (e.g., facebook.com)
+    /// </summary>
+    Domain = 6
 }

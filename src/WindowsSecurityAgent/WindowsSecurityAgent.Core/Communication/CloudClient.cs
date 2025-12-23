@@ -93,7 +93,7 @@ public class CloudClient : IDisposable
     /// <summary>
     /// Sends a heartbeat to the cloud
     /// </summary>
-    public async Task<bool> SendHeartbeatAsync(HeartbeatDTO heartbeat, CancellationToken cancellationToken = default)
+    public async Task<HeartbeatResponseDTO?> SendHeartbeatAsync(HeartbeatDTO heartbeat, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -102,13 +102,15 @@ public class CloudClient : IDisposable
             var response = await _httpClient.PostAsJsonAsync($"/api/agents/{_agentId}/heartbeat", heartbeat, cancellationToken);
             response.EnsureSuccessStatusCode();
 
-            _logger.LogDebug("Heartbeat sent successfully");
-            return true;
+            var result = await response.Content.ReadFromJsonAsync<HeartbeatResponseDTO>(cancellationToken: cancellationToken);
+            
+            _logger.LogDebug("Heartbeat sent successfully. Policies changed: {PoliciesChanged}", result?.PoliciesChanged ?? false);
+            return result;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send heartbeat");
-            return false;
+            return null;
         }
     }
 

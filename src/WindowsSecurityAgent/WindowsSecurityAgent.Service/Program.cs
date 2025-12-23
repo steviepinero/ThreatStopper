@@ -12,7 +12,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddEventLog(settings =>
 {
-    settings.SourceName = "WindowsSecurityAgent";
+    settings.SourceName = "ThreatStopper";
 });
 
 // Read configuration
@@ -39,6 +39,15 @@ builder.Services.AddSingleton(sp =>
         apiBaseUrl,
         apiKey,
         agentId));
+
+// Register URL blocking services
+builder.Services.AddSingleton<UrlBlocker>();
+builder.Services.AddSingleton(sp =>
+    new UrlPolicySyncService(
+        sp.GetRequiredService<ILogger<UrlPolicySyncService>>(),
+        sp.GetRequiredService<PolicyCache>(),
+        sp.GetRequiredService<UrlBlocker>(),
+        600)); // Sync every 10 minutes
 
 builder.Services.AddSingleton<PolicySyncService>();
 builder.Services.AddSingleton(sp => 

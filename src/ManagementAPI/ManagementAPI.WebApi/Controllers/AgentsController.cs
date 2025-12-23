@@ -45,14 +45,14 @@ public class AgentsController : ControllerBase
     /// Updates agent heartbeat
     /// </summary>
     [HttpPost("{id}/heartbeat")]
-    public async Task<IActionResult> Heartbeat(Guid id, [FromBody] HeartbeatDTO heartbeat)
+    public async Task<ActionResult<HeartbeatResponseDTO>> Heartbeat(Guid id, [FromBody] HeartbeatDTO heartbeat)
     {
-        var success = await _agentService.UpdateHeartbeatAsync(id, heartbeat);
+        var response = await _agentService.UpdateHeartbeatAsync(id, heartbeat);
         
-        if (!success)
+        if (response == null)
             return NotFound();
 
-        return Ok();
+        return Ok(response);
     }
 
     /// <summary>

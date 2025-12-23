@@ -139,20 +139,46 @@ public class AgentService
     }
 
     /// <summary>
-    /// Updates agent heartbeat
+    /// Updates agent heartbeat and returns response indicating if policies changed
     /// </summary>
-    public async Task<bool> UpdateHeartbeatAsync(Guid agentId, HeartbeatDTO heartbeat)
+    public async Task<HeartbeatResponseDTO?> UpdateHeartbeatAsync(Guid agentId, HeartbeatDTO heartbeat)
     {
-        var agent = await _dbContext.Agents.FindAsync(agentId);
+        var agent = await _dbContext.Agents
+            .Include(a => a.PolicyAssignments)
+                .ThenInclude(pa => pa.Policy)
+            .FirstOrDefaultAsync(a => a.AgentId == agentId);
+            
         if (agent == null)
-            return false;
+            return null;
+
+        // Get the most recent policy update timestamp for this agent's assigned policies
+        var lastPolicyUpdate = agent.PolicyAssignments
+            .Where(pa => pa.Policy.IsActive)
+            .Select(pa => pa.Policy.UpdatedAt)
+            .DefaultIfEmpty(DateTime.MinValue)
+            .Max();
+
+        // Check if policies have changed since last heartbeat
+        // If any policy was updated more recently than the last heartbeat (with 2 minute buffer for clock skew),
+        // consider policies as changed
+        var policiesChanged = lastPolicyUpdate > DateTime.MinValue && 
+                              lastPolicyUpdate > agent.LastHeartbeat.AddMinutes(-2);
 
         agent.Status = heartbeat.Status;
         agent.AgentVersion = heartbeat.AgentVersion;
+        var previousHeartbeat = agent.LastHeartbeat;
         agent.LastHeartbeat = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();
-        return true;
+
+        _logger.LogDebug("Heartbeat updated for agent {AgentId}. Policies changed: {Changed}, Last policy update: {LastUpdate}", 
+            agentId, policiesChanged, lastPolicyUpdate);
+
+        return new HeartbeatResponseDTO
+        {
+            PoliciesChanged = policiesChanged,
+            LastPolicyUpdate = lastPolicyUpdate > DateTime.MinValue ? lastPolicyUpdate : null
+        };
     }
 
     /// <summary>

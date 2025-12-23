@@ -113,7 +113,7 @@ if (-not (Test-Path $cacheDir)) {
 # Install the service
 Write-Info "Installing Windows Service..."
 try {
-    New-Service -Name $ServiceName -BinaryPathName $ExePath -DisplayName "Windows Security Agent" -Description "Monitors and enforces security policies for application installations and process execution" -StartupType Automatic -ErrorAction Stop | Out-Null
+    New-Service -Name $ServiceName -BinaryPathName $ExePath -DisplayName "ThreatStopper Agent" -Description "Advanced endpoint protection - monitors and enforces security policies for application installations and process execution" -StartupType Automatic -ErrorAction Stop | Out-Null
     
     Write-Success "CheckMark Service installed successfully"
 } catch {
