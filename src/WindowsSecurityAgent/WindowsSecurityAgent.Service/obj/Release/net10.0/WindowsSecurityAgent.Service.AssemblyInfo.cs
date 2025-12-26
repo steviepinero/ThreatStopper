@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WindowsSecurityAgent.Service")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+697311f81ec0ab8fb74ac61307bb169f871a1324")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3b84d42df56e35481ddc07931709a23f7cb96b5")]
 [assembly: System.Reflection.AssemblyProductAttribute("WindowsSecurityAgent.Service")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WindowsSecurityAgent.Service")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

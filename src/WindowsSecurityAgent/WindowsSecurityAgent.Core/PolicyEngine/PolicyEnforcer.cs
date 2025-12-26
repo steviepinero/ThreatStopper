@@ -36,20 +36,47 @@ public class PolicyEnforcer
                 return (false, null, null, "No active policies");
             }
 
+            // In whitelist mode, we need to check ALL policies for an Allow rule
+            // If any policy has a matching Allow rule, allow the process
+            // Otherwise, block it
+            
+            // First, check if there's a matching Allow rule in any policy
+            bool hasMatchingAllowRule = false;
+            Guid? allowPolicyId = null;
+            Guid? allowRuleId = null;
+            string allowReason = string.Empty;
+
             // Sort by priority (higher priority first)
             foreach (var policy in policies.OrderByDescending(p => p.Priority))
             {
                 var result = EvaluateProcessAgainstPolicy(processInfo, policy);
                 if (result.HasMatch)
                 {
-                    bool shouldBlock = result.Action == BlockAction.Block;
-                    string reason = $"Policy '{policy.Name}' - Rule: {result.RuleName}";
-                    
-                    _logger.LogInformation("Process {ProcessName} matched policy {PolicyName}: {Action}",
-                        processInfo.ProcessName, policy.Name, result.Action);
-
-                    return (shouldBlock, policy.PolicyId, result.RuleId, reason);
+                    if (result.Action == BlockAction.Block)
+                    {
+                        // Block rule takes precedence - block immediately
+                        string reason = $"Policy '{policy.Name}' - Rule: {result.RuleName}";
+                        _logger.LogInformation("Process {ProcessName} matched block rule in policy {PolicyName}",
+                            processInfo.ProcessName, policy.Name);
+                        return (true, policy.PolicyId, result.RuleId, reason);
+                    }
+                    else if (result.Action == BlockAction.Allow)
+                    {
+                        // Remember we found an Allow rule, but continue checking for Block rules
+                        hasMatchingAllowRule = true;
+                        allowPolicyId = policy.PolicyId;
+                        allowRuleId = result.RuleId;
+                        allowReason = $"Policy '{policy.Name}' - Rule: {result.RuleName}";
+                        _logger.LogInformation("Process {ProcessName} matched allow rule in policy {PolicyName}",
+                            processInfo.ProcessName, policy.Name);
+                    }
                 }
+            }
+
+            // If we found an Allow rule and no Block rule, allow it
+            if (hasMatchingAllowRule)
+            {
+                return (false, allowPolicyId, allowRuleId, allowReason);
             }
 
             // If no rules matched, use default policy mode behavior
@@ -59,6 +86,8 @@ public class PolicyEnforcer
                 if (defaultPolicy.Mode == PolicyMode.Whitelist)
                 {
                     // Whitelist mode: Block if no rule allowed it
+                    _logger.LogInformation("Process {ProcessName} blocked by whitelist mode - No matching allow rule",
+                        processInfo.ProcessName);
                     return (true, defaultPolicy.PolicyId, null, "Whitelist mode - No matching allow rule");
                 }
                 else
