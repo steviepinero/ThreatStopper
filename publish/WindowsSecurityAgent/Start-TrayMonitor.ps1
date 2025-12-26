@@ -6,7 +6,12 @@ param(
 )
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
-$trayExePath = Join-Path $scriptPath "WindowsSecurityAgent.TrayIcon.exe"
+# Check installation directory first, then script directory
+$installPath = "C:\Program Files\WindowsSecurityAgent"
+$trayExePath = Join-Path $installPath "WindowsSecurityAgent.TrayIcon.exe"
+if (-not (Test-Path $trayExePath)) {
+    $trayExePath = Join-Path $scriptPath "WindowsSecurityAgent.TrayIcon.exe"
+}
 
 if (-not (Test-Path $trayExePath)) {
     Write-Host "ERROR: Tray monitor executable not found at: $trayExePath" -ForegroundColor Red
@@ -38,7 +43,8 @@ if ($InstallStartup) {
 }
 
 Write-Host "Starting tray monitor..." -ForegroundColor Cyan
-Start-Process -FilePath $trayExePath -WorkingDirectory $scriptPath -WindowStyle Hidden
+$workingDir = if (Test-Path (Join-Path $installPath "WindowsSecurityAgent.TrayIcon.exe")) { $installPath } else { $scriptPath }
+Start-Process -FilePath $trayExePath -WorkingDirectory $workingDir -WindowStyle Hidden
 
 Start-Sleep -Seconds 2
 

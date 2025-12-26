@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Shared.Security")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bfff9b1d9e2e1256f6b1e94a5d4c450768d2a60")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed6dd39e912098bb4e358853976ac17e08efa7fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("Shared.Security")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Shared.Security")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

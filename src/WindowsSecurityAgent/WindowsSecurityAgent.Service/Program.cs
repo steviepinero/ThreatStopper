@@ -4,6 +4,7 @@ using WindowsSecurityAgent.Core.PolicyEngine;
 using WindowsSecurityAgent.Core.Communication;
 using Shared.Security;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -18,8 +19,17 @@ builder.Logging.AddEventLog(settings =>
 // Read configuration
 var config = builder.Configuration;
 var apiBaseUrl = config["CloudApi:BaseUrl"] ?? "https://localhost:5001";
-var agentIdStr = config["Agent:AgentId"] ?? Guid.NewGuid().ToString();
-var agentId = Guid.Parse(agentIdStr);
+
+// Handle AgentId - generate new if empty or invalid
+var agentIdStr = config["Agent:AgentId"] ?? string.Empty;
+Guid agentId;
+if (string.IsNullOrWhiteSpace(agentIdStr) || !Guid.TryParse(agentIdStr, out agentId))
+{
+    agentId = Guid.NewGuid();
+    // Log warning after logging is configured
+    Console.WriteLine($"[WARNING] AgentId not configured or invalid, generated new ID: {agentId}");
+}
+
 var apiKey = config["Agent:ApiKey"] ?? ApiKeyGenerator.GenerateApiKey();
 var encryptionKey = config["Agent:EncryptionKey"] ?? EncryptionHelper.GenerateKey();
 var cacheDirectory = config["Agent:CacheDirectory"] ?? Path.Combine(
