@@ -169,16 +169,46 @@ public class PolicyEnforcer
     {
         try
         {
+            // ProcessName from WMI includes the extension (e.g., "notepad.exe")
+            // But the user might enter "notepad.exe" or just "notepad"
+            // Support both cases by checking with and without extension
+            
+            var processName = processInfo.ProcessName ?? string.Empty;
+            var criteria = rule.Criteria ?? string.Empty;
+            
+            if (string.IsNullOrWhiteSpace(processName) || string.IsNullOrWhiteSpace(criteria))
+                return false;
+            
+            // Normalize: remove extension from processName for comparison if criteria doesn't have one
+            var processNameWithoutExt = Path.GetFileNameWithoutExtension(processName);
+            var criteriaWithoutExt = Path.GetFileNameWithoutExtension(criteria);
+            
             // Support wildcards in filename
-            var pattern = "^" + Regex.Escape(rule.Criteria)
+            // Escape special regex characters, then replace wildcards
+            var pattern = "^" + Regex.Escape(criteria)
                 .Replace("\\*", ".*")
                 .Replace("\\?", ".") + "$";
             
-            return Regex.IsMatch(processInfo.ProcessName, pattern, RegexOptions.IgnoreCase);
+            // Try matching against full name (with extension) first
+            if (Regex.IsMatch(processName, pattern, RegexOptions.IgnoreCase))
+                return true;
+            
+            // If criteria doesn't have an extension, also try matching without extension
+            if (!criteria.Contains('.', StringComparison.Ordinal) || criteriaWithoutExt == criteria)
+            {
+                var patternWithoutExt = "^" + Regex.Escape(criteria)
+                    .Replace("\\*", ".*")
+                    .Replace("\\?", ".") + "$";
+                if (Regex.IsMatch(processNameWithoutExt, patternWithoutExt, RegexOptions.IgnoreCase))
+                    return true;
+            }
+            
+            return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error matching filename pattern {Pattern}", rule.Criteria);
+            _logger.LogError(ex, "Error matching filename pattern {Pattern} against {ProcessName}", 
+                rule.Criteria, processInfo.ProcessName);
             return false;
         }
     }

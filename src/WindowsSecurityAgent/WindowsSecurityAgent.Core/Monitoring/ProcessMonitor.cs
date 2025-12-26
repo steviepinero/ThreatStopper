@@ -142,9 +142,17 @@ public class ProcessMonitor : IDisposable
 
     private bool ShouldMonitorProcess(string processName)
     {
-        // Add logic to filter which non-installer processes to monitor
-        // For now, we'll only monitor installers
-        return false;
+        // Monitor all processes for policy enforcement
+        // Filename blocking, path blocking, and other policy rules need to evaluate all processes
+        if (string.IsNullOrWhiteSpace(processName))
+            return false;
+            
+        // Monitor all executable processes (those ending in .exe or having no extension but are processes)
+        // WMI's Name property includes the extension (e.g., "notepad.exe")
+        return processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || 
+               processName.EndsWith(".com", StringComparison.OrdinalIgnoreCase) ||
+               processName.EndsWith(".bat", StringComparison.OrdinalIgnoreCase) ||
+               processName.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase);
     }
 
     public void Dispose()
