@@ -22,6 +22,16 @@ An enterprise-grade endpoint protection platform designed to replace complex Gro
 - **Agent Health Monitoring**: Track online/offline status with heartbeats
 - **Policy Assignment**: Flexible policy-to-agent assignment system
 
+  <img width="1654" height="872" alt="image" src="https://github.com/user-attachments/assets/156a52e8-34fe-48b7-96a4-8cd76126627e" />
+
+<img width="1614" height="774" alt="image" src="https://github.com/user-attachments/assets/572d0190-446f-4ce8-90e2-520d4bb32cf9" />
+
+<img width="975" height="568" alt="image" src="https://github.com/user-attachments/assets/53aaf71a-010b-4432-9fc6-ee6c0c6a6a09" />
+
+<img width="1546" height="1023" alt="image" src="https://github.com/user-attachments/assets/3b70d6ff-b2fe-41d9-9494-5be670e1d09e" />
+
+
+
 ## 📁 Project Structure
 
 ```
