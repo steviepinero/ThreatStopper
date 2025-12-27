@@ -390,7 +390,7 @@ This is a custom enterprise security solution. For modifications:
 
 ## 📄 License
 
-Proprietary - Internal Use Only
+MIT
 
 ## ⚠️ Important Notes
 
