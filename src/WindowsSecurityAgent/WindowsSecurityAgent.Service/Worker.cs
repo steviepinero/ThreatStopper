@@ -22,7 +22,7 @@ public class AgentWorker : BackgroundService
     private readonly IConfiguration _configuration;
 
     private readonly TimeSpan _policySyncInterval;
-    private readonly TimeSpan _heartbeatInterval = TimeSpan.FromMinutes(1);
+    private readonly TimeSpan _heartbeatInterval;
     private readonly TimeSpan _auditFlushInterval = TimeSpan.FromSeconds(30);
 
     public AgentWorker(
@@ -49,6 +49,11 @@ public class AgentWorker : BackgroundService
         _policySyncInterval = TimeSpan.FromSeconds(syncIntervalSeconds);
         _logger.LogInformation("Policy sync interval set to {Interval} seconds ({Minutes} minutes)", 
             syncIntervalSeconds, syncIntervalSeconds / 60);
+        
+        // Read heartbeat interval from configuration, default to 30 seconds
+        var heartbeatIntervalSeconds = configuration.GetValue<int>("Agent:HeartbeatIntervalSeconds", 30);
+        _heartbeatInterval = TimeSpan.FromSeconds(heartbeatIntervalSeconds);
+        _logger.LogInformation("Heartbeat interval set to {Interval} seconds", heartbeatIntervalSeconds);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

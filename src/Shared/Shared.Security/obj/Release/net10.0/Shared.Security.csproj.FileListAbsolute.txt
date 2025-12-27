@@ -9,3 +9,4 @@ C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Release\ne
 C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Release\net10.0\refint\Shared.Security.dll
 C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Release\net10.0\Shared.Security.pdb
 C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Release\net10.0\ref\Shared.Security.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\Shared\Shared.Security\obj\Release\net10.0\Shared.Security.sourcelink.json

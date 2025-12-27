@@ -183,6 +183,29 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("✓ Added FOOTBALLHEAD agent");
         Console.WriteLine($"  Agent ID: {footballheadAgent.AgentId}");
     }
+    
+    // Add agent 675869b0-1804-486b-b1e7-b3182ec7e5b1 if it doesn't exist
+    var agentId = Guid.Parse("675869b0-1804-486b-b1e7-b3182ec7e5b1");
+    if (!context.Agents.Any(a => a.AgentId == agentId))
+    {
+        var agent = new ManagementAPI.Data.Entities.Agent
+        {
+            AgentId = agentId,
+            TenantId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            MachineName = Environment.MachineName,
+            OperatingSystem = "Windows 11",
+            AgentVersion = "1.0.0",
+            ApiKeyHash = "test-hash",
+            Status = Shared.Models.Enums.AgentStatus.Online,
+            LastHeartbeat = DateTime.UtcNow,
+            RegisteredAt = DateTime.UtcNow
+        };
+        context.Agents.Add(agent);
+        context.SaveChanges();
+        
+        Console.WriteLine($"✓ Added agent {agent.MachineName}");
+        Console.WriteLine($"  Agent ID: {agent.AgentId}");
+    }
 }
 
 // Configure the HTTP request pipeline

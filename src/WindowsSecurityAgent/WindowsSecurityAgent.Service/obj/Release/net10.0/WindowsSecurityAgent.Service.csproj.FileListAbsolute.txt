@@ -58,3 +58,4 @@ C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityA
 C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Service\obj\Release\net10.0\WindowsSecurityAgent.Service.pdb
 C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Service\obj\Release\net10.0\WindowsSecurityAgent.Service.genruntimeconfig.cache
 C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Service\obj\Release\net10.0\ref\WindowsSecurityAgent.Service.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\WindowsSecurityAgent\WindowsSecurityAgent.Service\obj\Release\net10.0\WindowsSecurityAgent.Service.sourcelink.json

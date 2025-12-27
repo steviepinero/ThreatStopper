@@ -79,25 +79,25 @@ public class PolicyEnforcer
                 return (false, allowPolicyId, allowRuleId, allowReason);
             }
 
-            // If no rules matched, use default policy mode behavior
-            var defaultPolicy = policies.FirstOrDefault();
-            if (defaultPolicy != null)
+            // If no rules matched, check if ANY policy is in whitelist mode
+            // If any whitelist policy exists, block by default (whitelist mode)
+            // Otherwise, allow by default (blacklist mode)
+            var hasWhitelistPolicy = policies.Any(p => p.Mode == PolicyMode.Whitelist);
+            
+            if (hasWhitelistPolicy)
             {
-                if (defaultPolicy.Mode == PolicyMode.Whitelist)
-                {
-                    // Whitelist mode: Block if no rule allowed it
-                    _logger.LogInformation("Process {ProcessName} blocked by whitelist mode - No matching allow rule",
-                        processInfo.ProcessName);
-                    return (true, defaultPolicy.PolicyId, null, "Whitelist mode - No matching allow rule");
-                }
-                else
-                {
-                    // Blacklist mode: Allow if no rule blocked it
-                    return (false, defaultPolicy.PolicyId, null, "Blacklist mode - No matching block rule");
-                }
+                // Whitelist mode: Block if no rule allowed it
+                var whitelistPolicy = policies.FirstOrDefault(p => p.Mode == PolicyMode.Whitelist);
+                _logger.LogInformation("Process {ProcessName} blocked by whitelist mode - No matching allow rule",
+                    processInfo.ProcessName);
+                return (true, whitelistPolicy?.PolicyId ?? policies.First().PolicyId, null, "Whitelist mode - No matching allow rule");
             }
-
-            return (false, null, null, "Default allow");
+            else
+            {
+                // Blacklist mode: Allow if no rule blocked it
+                var defaultPolicy = policies.FirstOrDefault();
+                return (false, defaultPolicy?.PolicyId, null, "Blacklist mode - No matching block rule");
+            }
         }
         catch (Exception ex)
         {
