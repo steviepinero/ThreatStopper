@@ -1,6 +1,7 @@
 using WindowsSecurityAgent.Core.Monitoring;
 using WindowsSecurityAgent.Core.PolicyEngine;
 using WindowsSecurityAgent.Core.Communication;
+using WindowsSecurityAgent.Core.Services;
 using Shared.Models.Enums;
 using Shared.Models.DTOs;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,7 @@ public class AgentWorker : BackgroundService
     private readonly PolicySyncService _policySyncService;
     private readonly AuditReporter _auditReporter;
     private readonly CloudClient _cloudClient;
+    private readonly AccessRequestManager _accessRequestManager;
     private readonly IConfiguration _configuration;
 
     private readonly TimeSpan _policySyncInterval;
@@ -33,6 +35,7 @@ public class AgentWorker : BackgroundService
         PolicySyncService policySyncService,
         AuditReporter auditReporter,
         CloudClient cloudClient,
+        AccessRequestManager accessRequestManager,
         IConfiguration configuration)
     {
         _logger = logger;
@@ -42,7 +45,11 @@ public class AgentWorker : BackgroundService
         _policySyncService = policySyncService;
         _auditReporter = auditReporter;
         _cloudClient = cloudClient;
+        _accessRequestManager = accessRequestManager;
         _configuration = configuration;
+        
+        // Wire the access request manager into the policy enforcer
+        _policyEnforcer.SetAccessRequestManager(_accessRequestManager);
         
         // Read policy sync interval from configuration, default to 5 minutes
         var syncIntervalSeconds = configuration.GetValue<int>("Agent:PolicySyncIntervalSeconds", 300);
@@ -82,9 +89,10 @@ public class AgentWorker : BackgroundService
             var policySyncTask = PeriodicPolicySyncAsync(stoppingToken);
             var heartbeatTask = PeriodicHeartbeatAsync(stoppingToken);
             var auditFlushTask = PeriodicAuditFlushAsync(stoppingToken);
+            var accessRequestCheckTask = PeriodicAccessRequestCheckAsync(stoppingToken);
 
             // Wait for cancellation
-            await Task.WhenAll(policySyncTask, heartbeatTask, auditFlushTask);
+            await Task.WhenAll(policySyncTask, heartbeatTask, auditFlushTask, accessRequestCheckTask);
         }
         catch (Exception ex)
         {
@@ -268,6 +276,31 @@ public class AgentWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error flushing audit logs");
+            }
+        }
+    }
+
+    private async Task PeriodicAccessRequestCheckAsync(CancellationToken cancellationToken)
+    {
+        // Check for approved requests every 30 seconds
+        var checkInterval = TimeSpan.FromSeconds(30);
+        
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(checkInterval, cancellationToken);
+                
+                _logger.LogDebug("Checking for approved access requests...");
+                await _accessRequestManager.CheckForRequestUpdatesAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking for access request updates");
             }
         }
     }

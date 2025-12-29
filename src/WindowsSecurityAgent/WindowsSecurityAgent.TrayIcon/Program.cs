@@ -21,7 +21,7 @@ class Program
         builder.Services.AddLogging(logging =>
         {
             logging.AddConsole();
-            logging.SetMinimumLevel(LogLevel.Warning);
+            logging.SetMinimumLevel(LogLevel.Information);
         });
 
         builder.Services.AddSingleton<TrayMonitorService>();
@@ -35,11 +35,14 @@ class Program
         }
         catch (Exception ex)
         {
+            var errorMsg = $"Failed to start tray monitor: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}";
+            Console.Error.WriteLine(errorMsg);
             MessageBox.Show(
                 $"Failed to start tray monitor: {ex.Message}",
                 "Windows Security Agent Tray Monitor",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+            Environment.Exit(1);
         }
     }
 }

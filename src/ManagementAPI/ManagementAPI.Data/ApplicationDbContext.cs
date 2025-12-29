@@ -19,6 +19,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<AgentPolicyAssignment> AgentPolicyAssignments { get; set; }
+    public DbSet<AccessRequest> AccessRequests { get; set; }
+    public DbSet<AccessApproval> AccessApprovals { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -142,6 +144,64 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.AgentId);
             entity.HasIndex(e => e.PolicyId);
             entity.HasIndex(e => new { e.AgentId, e.PolicyId }).IsUnique();
+        });
+
+        // AccessRequest configuration
+        modelBuilder.Entity<AccessRequest>(entity =>
+        {
+            entity.HasKey(e => e.RequestId);
+            entity.Property(e => e.ResourceType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ResourceIdentifier).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.ResourceName).HasMaxLength(500);
+            entity.Property(e => e.UserName).HasMaxLength(200);
+            entity.Property(e => e.Justification).HasMaxLength(2000);
+            entity.Property(e => e.ReviewComments).HasMaxLength(2000);
+            
+            entity.HasOne(e => e.Agent)
+                .WithMany(a => a.AccessRequests)
+                .HasForeignKey(e => e.AgentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasIndex(e => e.AgentId);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.RequestedAt);
+            entity.HasIndex(e => new { e.AgentId, e.ResourceIdentifier, e.Status });
+        });
+
+        // AccessApproval configuration
+        modelBuilder.Entity<AccessApproval>(entity =>
+        {
+            entity.HasKey(e => e.ApprovalId);
+            entity.Property(e => e.ResourceType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.ResourceIdentifier).IsRequired().HasMaxLength(1000);
+            
+            entity.HasOne(e => e.Request)
+                .WithMany()
+                .HasForeignKey(e => e.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Agent)
+                .WithMany(a => a.AccessApprovals)
+                .HasForeignKey(e => e.AgentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasIndex(e => e.AgentId);
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.RequestId);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.ExpiresAt);
+            entity.HasIndex(e => new { e.AgentId, e.ResourceIdentifier, e.IsActive });
         });
     }
 }

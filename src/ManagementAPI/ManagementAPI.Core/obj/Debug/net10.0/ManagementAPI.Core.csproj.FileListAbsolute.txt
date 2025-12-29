@@ -63,3 +63,4 @@ C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Core\obj\
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Core\obj\Debug\net10.0\refint\ManagementAPI.Core.dll
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Core\obj\Debug\net10.0\ManagementAPI.Core.pdb
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Core\obj\Debug\net10.0\ref\ManagementAPI.Core.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Core\obj\Debug\net10.0\ManagementAPI.Core.sourcelink.json

@@ -147,6 +147,28 @@ if ($StartService) {
     }
 }
 
+# Optionally install auto-start tray monitor
+Write-Host ""
+Write-Info "Installing auto-start tray monitor..."
+$autoStartScript = Join-Path $ScriptDir "Start-TrayMonitor-Auto.ps1"
+if (Test-Path $autoStartScript) {
+    try {
+        # Run as current user (not admin) since scheduled task needs user context
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        Write-Info "  Installing scheduled task for user: $currentUser"
+        & powershell.exe -ExecutionPolicy Bypass -File $autoStartScript -Install
+        Write-Success "CheckMark Auto-start tray monitor installed"
+        Write-Info "  The tray monitor will start automatically when the service is running."
+    } catch {
+        Write-Warning "Warning Failed to install auto-start tray monitor: $_"
+        Write-Warning "  You can manually install it later by running:"
+        Write-Warning "  .\Start-TrayMonitor-Auto.ps1 -Install"
+    }
+} else {
+    Write-Warning "Warning Auto-start script not found at: $autoStartScript"
+    Write-Warning "  Skipping auto-start tray monitor installation..."
+}
+
 # Display final status
 Write-Host ""
 Write-Info "======================================================================"

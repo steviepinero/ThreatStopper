@@ -139,6 +139,78 @@ public class CloudClient : IDisposable
         }
     }
 
+    /// <summary>
+    /// Submits an access request to the cloud
+    /// </summary>
+    public async Task<bool> SubmitAccessRequestAsync(CreateAccessRequestDTO request, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("Submitting access request for {ResourceType}: {ResourceIdentifier}", 
+                request.ResourceType, request.ResourceIdentifier);
+            
+            var response = await _httpClient.PostAsJsonAsync("/api/accessrequests", request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            _logger.LogInformation("Access request submitted successfully");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to submit access request");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if a resource has an active approval
+    /// </summary>
+    public async Task<AccessApprovalResponseDTO?> CheckApprovalAsync(AccessApprovalCheckDTO check, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogDebug("Checking approval for {ResourceType}: {ResourceIdentifier}", 
+                check.ResourceType, check.ResourceIdentifier);
+            
+            var response = await _httpClient.PostAsJsonAsync("/api/accessrequests/check-approval", check, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<AccessApprovalResponseDTO>(cancellationToken: cancellationToken);
+            
+            _logger.LogDebug("Approval check result: {IsApproved}", result?.IsApproved ?? false);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to check approval");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets pending access requests for this agent
+    /// </summary>
+    public async Task<List<AccessRequestDTO>> GetPendingRequestsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogDebug("Fetching pending access requests for agent...");
+            
+            var response = await _httpClient.GetAsync($"/api/accessrequests/agent/{_agentId}/pending", cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var requests = await response.Content.ReadFromJsonAsync<List<AccessRequestDTO>>(cancellationToken: cancellationToken);
+            
+            _logger.LogDebug("Retrieved {Count} pending access requests", requests?.Count ?? 0);
+            return requests ?? new List<AccessRequestDTO>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to fetch pending access requests");
+            return new List<AccessRequestDTO>();
+        }
+    }
+
     public void Dispose()
     {
         _httpClient?.Dispose();

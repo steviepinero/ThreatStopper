@@ -1,0 +1,1 @@
+The application to execute does not exist: 'C:\Users\stevi\WindowsSecurityPlatform\publish\WindowsSecurityAgent\WindowsSecurityAgent.TrayIcon.dll'.

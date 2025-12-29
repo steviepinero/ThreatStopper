@@ -61,3 +61,4 @@ C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Data\obj\
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Data\obj\Debug\net10.0\ManagementAPI.Data.pdb
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Data\obj\Debug\net10.0\ManagementAPI.Data.genruntimeconfig.cache
 C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Data\obj\Debug\net10.0\ref\ManagementAPI.Data.dll
+C:\Users\stevi\WindowsSecurityPlatform\src\ManagementAPI\ManagementAPI.Data\obj\Debug\net10.0\ManagementAPI.Data.sourcelink.json

@@ -15,5 +15,9 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WindowsSecurityAgent.Core\WindowsSecurityAgent.Core.csproj" />
+  </ItemGroup>
+
 </Project>
 

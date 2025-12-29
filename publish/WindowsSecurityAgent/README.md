@@ -60,6 +60,8 @@ $bytes = New-Object byte[] 32
 
 The agent will be installed as a Windows Service and started automatically.
 
+**Note:** The installation script also installs an auto-start tray monitor that starts automatically when the service is running. This provides a system tray icon for users to monitor the service and request access to blocked resources.
+
 ### Step 3: Deploy to Multiple Computers
 
 **Option A: Using Computer Names**
@@ -147,6 +149,44 @@ Restart-Service WindowsSecurityAgent
 # Check service details
 Get-Service WindowsSecurityAgent | Format-List *
 ```
+
+## 🖥️ Tray Monitor
+
+The tray monitor provides a system tray icon that allows users to:
+- Monitor service status
+- Request access to blocked URLs
+- View service information
+
+### Auto-Start Tray Monitor
+
+The tray monitor is automatically installed as a scheduled task during installation. It will:
+- Start automatically when the service is running
+- Monitor the service status and restart if needed
+- Provide access request functionality
+
+### Manual Tray Monitor Management
+
+**Start tray monitor manually:**
+```powershell
+.\Start-TrayMonitor.ps1
+```
+
+**Install auto-start (if not done during installation):**
+```powershell
+.\Start-TrayMonitor-Auto.ps1 -Install
+```
+
+**Uninstall auto-start:**
+```powershell
+.\Start-TrayMonitor-Auto.ps1 -Uninstall
+```
+
+**Run monitoring script directly (for testing):**
+```powershell
+.\Start-TrayMonitor-Auto.ps1
+```
+
+This will continuously monitor the service and start the tray monitor when the service is running.
 
 ## 🛠️ Troubleshooting
 

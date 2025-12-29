@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Shared.Models.Enums;
 using Shared.Security;
 using WindowsSecurityAgent.Core.Models;
+using WindowsSecurityAgent.Core.Services;
 using WindowsSecurityAgent.Core.Utilities;
 using System.Text.RegularExpressions;
 
@@ -14,6 +15,7 @@ public class PolicyEnforcer
 {
     private readonly ILogger<PolicyEnforcer> _logger;
     private readonly PolicyCache _policyCache;
+    private AccessRequestManager? _accessRequestManager;
 
     public PolicyEnforcer(ILogger<PolicyEnforcer> logger, PolicyCache policyCache)
     {
@@ -22,12 +24,32 @@ public class PolicyEnforcer
     }
 
     /// <summary>
+    /// Sets the access request manager for handling user requests
+    /// </summary>
+    public void SetAccessRequestManager(AccessRequestManager manager)
+    {
+        _accessRequestManager = manager;
+    }
+
+    /// <summary>
     /// Evaluates if a process should be blocked based on active policies
+    /// Checks for existing approvals first
     /// </summary>
     public (bool ShouldBlock, Guid? PolicyId, Guid? RuleId, string Reason) EvaluateProcess(ProcessInfo processInfo)
     {
         try
         {
+            // First, check if there's an active approval for this executable
+            if (_accessRequestManager != null && !string.IsNullOrWhiteSpace(processInfo.ExecutablePath))
+            {
+                var hasApproval = _accessRequestManager.CheckApprovalAsync("Executable", processInfo.ExecutablePath).GetAwaiter().GetResult();
+                if (hasApproval)
+                {
+                    _logger.LogInformation("Process {ProcessName} has active approval, allowing", processInfo.ProcessName);
+                    return (false, null, null, "Active approval");
+                }
+            }
+
             var policies = _policyCache.GetActivePolicies();
             
             if (!policies.Any())
@@ -58,6 +80,20 @@ public class PolicyEnforcer
                         string reason = $"Policy '{policy.Name}' - Rule: {result.RuleName}";
                         _logger.LogInformation("Process {ProcessName} matched block rule in policy {PolicyName}",
                             processInfo.ProcessName, policy.Name);
+                        
+                        // Trigger access request popup
+                        if (_accessRequestManager != null && !string.IsNullOrWhiteSpace(processInfo.ExecutablePath))
+                        {
+                            _ = _accessRequestManager.RequestAccessAsync(
+                                "Executable",
+                                processInfo.ExecutablePath,
+                                processInfo.ProcessName,
+                                processInfo.UserName ?? Environment.UserName,
+                                policy.PolicyId,
+                                result.RuleId
+                            );
+                        }
+                        
                         return (true, policy.PolicyId, result.RuleId, reason);
                     }
                     else if (result.Action == BlockAction.Allow)
@@ -90,6 +126,20 @@ public class PolicyEnforcer
                 var whitelistPolicy = policies.FirstOrDefault(p => p.Mode == PolicyMode.Whitelist);
                 _logger.LogInformation("Process {ProcessName} blocked by whitelist mode - No matching allow rule",
                     processInfo.ProcessName);
+                
+                // Trigger access request popup
+                if (_accessRequestManager != null && !string.IsNullOrWhiteSpace(processInfo.ExecutablePath))
+                {
+                    _ = _accessRequestManager.RequestAccessAsync(
+                        "Executable",
+                        processInfo.ExecutablePath,
+                        processInfo.ProcessName,
+                        processInfo.UserName ?? Environment.UserName,
+                        whitelistPolicy?.PolicyId,
+                        null
+                    );
+                }
+                
                 return (true, whitelistPolicy?.PolicyId ?? policies.First().PolicyId, null, "Whitelist mode - No matching allow rule");
             }
             else

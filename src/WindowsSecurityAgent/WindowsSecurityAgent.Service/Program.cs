@@ -2,6 +2,7 @@ using WindowsSecurityAgent.Service;
 using WindowsSecurityAgent.Core.Monitoring;
 using WindowsSecurityAgent.Core.PolicyEngine;
 using WindowsSecurityAgent.Core.Communication;
+using WindowsSecurityAgent.Core.Services;
 using Shared.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +75,11 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<PolicyEnforcer>();
 builder.Services.AddSingleton<ProcessMonitor>();
 builder.Services.AddSingleton<FileSystemMonitor>();
+builder.Services.AddSingleton(sp => 
+    new AccessRequestManager(
+        sp.GetRequiredService<ILogger<AccessRequestManager>>(),
+        sp.GetRequiredService<CloudClient>(),
+        agentId));
 
 // Register the main worker service
 builder.Services.AddHostedService<AgentWorker>();

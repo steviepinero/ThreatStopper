@@ -81,6 +81,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<AgentService>();
 builder.Services.AddScoped<PolicyService>();
 builder.Services.AddScoped<AuditLogService>();
+builder.Services.AddScoped<AccessRequestService>();
 
 var app = builder.Build();
 

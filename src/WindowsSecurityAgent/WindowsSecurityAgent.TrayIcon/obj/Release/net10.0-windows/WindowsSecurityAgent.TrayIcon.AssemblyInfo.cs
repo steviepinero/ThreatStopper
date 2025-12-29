@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WindowsSecurityAgent.TrayIcon")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed6dd39e912098bb4e358853976ac17e08efa7fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+37d0ed105d890d09a896cdbcff6dfd1346c2e64f")]
 [assembly: System.Reflection.AssemblyProductAttribute("WindowsSecurityAgent.TrayIcon")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WindowsSecurityAgent.TrayIcon")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

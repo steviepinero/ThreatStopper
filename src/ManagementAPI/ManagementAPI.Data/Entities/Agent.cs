@@ -21,4 +21,6 @@ public class Agent
     public Organization Organization { get; set; } = null!;
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
     public ICollection<AgentPolicyAssignment> PolicyAssignments { get; set; } = new List<AgentPolicyAssignment>();
+    public ICollection<AccessRequest> AccessRequests { get; set; } = new List<AccessRequest>();
+    public ICollection<AccessApproval> AccessApprovals { get; set; } = new List<AccessApproval>();
 }

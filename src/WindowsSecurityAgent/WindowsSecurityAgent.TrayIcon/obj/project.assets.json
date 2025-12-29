@@ -578,6 +578,28 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "System.Management/10.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/System.Management.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/System.Management.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.Management.dll": {
+            "assetType": "runtime",
+            "rid": "win"
+          }
+        }
+      },
       "System.ServiceProcess.ServiceController/9.0.0": {
         "type": "package",
         "compile": {
@@ -598,6 +620,42 @@
             "assetType": "runtime",
             "rid": "win"
           }
+        }
+      },
+      "Shared.Models/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Shared.Models.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Shared.Models.dll": {}
+        }
+      },
+      "Shared.Security/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Shared.Security.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Shared.Security.dll": {}
+        }
+      },
+      "WindowsSecurityAgent.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.1",
+          "Shared.Models": "1.0.0",
+          "Shared.Security": "1.0.0",
+          "System.Management": "10.0.1"
+        },
+        "compile": {
+          "bin/placeholder/WindowsSecurityAgent.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/WindowsSecurityAgent.Core.dll": {}
         }
       }
     }
@@ -1468,6 +1526,38 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "System.Management/10.0.1": {
+      "sha512": "/mywt9LtfYM+QbnIPPqdES/qWWU3tkorSDHPX99KYhCTtxdjGFmLcz7QwpAAeBKU0o+rZzEcpKZlrtEr1Xq39g==",
+      "type": "package",
+      "path": "system.management/10.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Management.targets",
+        "lib/net10.0/System.Management.dll",
+        "lib/net10.0/System.Management.xml",
+        "lib/net462/_._",
+        "lib/net8.0/System.Management.dll",
+        "lib/net8.0/System.Management.xml",
+        "lib/net9.0/System.Management.dll",
+        "lib/net9.0/System.Management.xml",
+        "lib/netstandard2.0/System.Management.dll",
+        "lib/netstandard2.0/System.Management.xml",
+        "runtimes/win/lib/net10.0/System.Management.dll",
+        "runtimes/win/lib/net10.0/System.Management.xml",
+        "runtimes/win/lib/net8.0/System.Management.dll",
+        "runtimes/win/lib/net8.0/System.Management.xml",
+        "runtimes/win/lib/net9.0/System.Management.dll",
+        "runtimes/win/lib/net9.0/System.Management.xml",
+        "system.management.10.0.1.nupkg.sha512",
+        "system.management.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
     "System.ServiceProcess.ServiceController/9.0.0": {
       "sha512": "ciFstNZEWYf40HbwzdQLdgQpgpnjkleC1z0jMqBKRdkEQqQ6I/Aht0x9fTBODnaQTtcF+scvrdimoDbfNap/aQ==",
       "type": "package",
@@ -1499,6 +1589,21 @@
         "system.serviceprocess.servicecontroller.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "Shared.Models/1.0.0": {
+      "type": "project",
+      "path": "../../Shared/Shared.Models/Shared.Models.csproj",
+      "msbuildProject": "../../Shared/Shared.Models/Shared.Models.csproj"
+    },
+    "Shared.Security/1.0.0": {
+      "type": "project",
+      "path": "../../Shared/Shared.Security/Shared.Security.csproj",
+      "msbuildProject": "../../Shared/Shared.Security/Shared.Security.csproj"
+    },
+    "WindowsSecurityAgent.Core/1.0.0": {
+      "type": "project",
+      "path": "../WindowsSecurityAgent.Core/WindowsSecurityAgent.Core.csproj",
+      "msbuildProject": "../WindowsSecurityAgent.Core/WindowsSecurityAgent.Core.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -1506,7 +1611,8 @@
       "Microsoft.Extensions.Hosting >= 10.0.1",
       "Microsoft.Extensions.Logging >= 10.0.1",
       "Microsoft.Extensions.Logging.Console >= 10.0.1",
-      "System.ServiceProcess.ServiceController >= 9.0.0"
+      "System.ServiceProcess.ServiceController >= 9.0.0",
+      "WindowsSecurityAgent.Core >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1535,7 +1641,11 @@
       "frameworks": {
         "net10.0-windows7.0": {
           "targetAlias": "net10.0-windows",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\WindowsSecurityAgent\\WindowsSecurityAgent.Core\\WindowsSecurityAgent.Core.csproj": {
+              "projectPath": "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\WindowsSecurityAgent\\WindowsSecurityAgent.Core\\WindowsSecurityAgent.Core.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "mfoBwqX4eVk=",
+  "dgSpecHash": "2SqMN4lohbE=",
   "success": true,
   "projectFilePath": "C:\\Users\\stevi\\WindowsSecurityPlatform\\src\\WindowsSecurityAgent\\WindowsSecurityAgent.TrayIcon\\WindowsSecurityAgent.TrayIcon.csproj",
   "expectedPackageFiles": [
@@ -31,6 +31,7 @@
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.options\\10.0.1\\microsoft.extensions.options.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.1\\microsoft.extensions.options.configurationextensions.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.1\\microsoft.extensions.primitives.10.0.1.nupkg.sha512",
+    "C:\\Users\\stevi\\.nuget\\packages\\system.management\\10.0.1\\system.management.10.0.1.nupkg.sha512",
     "C:\\Users\\stevi\\.nuget\\packages\\system.serviceprocess.servicecontroller\\9.0.0\\system.serviceprocess.servicecontroller.9.0.0.nupkg.sha512"
   ],
   "logs": []

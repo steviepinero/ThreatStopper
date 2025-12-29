@@ -5,6 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Timers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WindowsSecurityAgent.Core.Services;
+using WindowsSecurityAgent.TrayIcon.Forms;
 
 namespace WindowsSecurityAgent.TrayIcon;
 
@@ -14,32 +16,44 @@ namespace WindowsSecurityAgent.TrayIcon;
 public class TrayMonitorService : IHostedService
 {
     private readonly ILogger<TrayMonitorService> _logger;
+    private readonly AccessRequestManager? _accessRequestManager;
     private NotifyIcon? _notifyIcon;
     private Thread? _uiThread;
     private System.Timers.Timer? _statusCheckTimer;
     private Form? _hiddenForm;
     private const string ServiceName = "WindowsSecurityAgent";
 
-    public TrayMonitorService(ILogger<TrayMonitorService> logger)
+    public TrayMonitorService(ILogger<TrayMonitorService> logger, AccessRequestManager? accessRequestManager = null)
     {
         _logger = logger;
+        _accessRequestManager = accessRequestManager;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _uiThread = new Thread(() =>
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-
-            // Create a hidden form for synchronization context
-            _hiddenForm = new Form
+            try
             {
-                WindowState = FormWindowState.Minimized,
-                ShowInTaskbar = false,
-                Visible = false
-            };
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.SetHighDpiMode(HighDpiMode.SystemAware);
+
+                // Create a hidden form for synchronization context
+                _hiddenForm = new Form
+                {
+                    WindowState = FormWindowState.Minimized,
+                    ShowInTaskbar = false,
+                    Visible = false
+                };
+
+            // Subscribe to access request events if the manager is available
+            if (_accessRequestManager != null)
+            {
+                _accessRequestManager.AccessRequestNeeded += OnAccessRequestNeeded;
+                _accessRequestManager.AccessApproved += OnAccessApproved;
+                _accessRequestManager.AccessDenied += OnAccessDenied;
+            }
 
             CreateTrayIcon();
             CheckServiceStatus();
@@ -50,7 +64,25 @@ public class TrayMonitorService : IHostedService
             _statusCheckTimer.AutoReset = true;
             _statusCheckTimer.Start();
 
-            Application.Run(_hiddenForm);
+                Application.Run(_hiddenForm);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in tray monitor UI thread");
+                try
+                {
+                    MessageBox.Show(
+                        $"Tray monitor error: {ex.Message}",
+                        "ThreatStopper Tray Monitor",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+                catch
+                {
+                    // If MessageBox fails, just log
+                    Console.Error.WriteLine($"Tray monitor error: {ex.Message}");
+                }
+            }
         })
         {
             IsBackground = false,
@@ -66,6 +98,14 @@ public class TrayMonitorService : IHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _statusCheckTimer?.Dispose();
+
+        // Unsubscribe from access request events
+        if (_accessRequestManager != null)
+        {
+            _accessRequestManager.AccessRequestNeeded -= OnAccessRequestNeeded;
+            _accessRequestManager.AccessApproved -= OnAccessApproved;
+            _accessRequestManager.AccessDenied -= OnAccessDenied;
+        }
 
         if (_notifyIcon != null)
         {
@@ -94,12 +134,14 @@ public class TrayMonitorService : IHostedService
     {
         try
         {
+            _logger.LogInformation("Creating tray icon...");
             _notifyIcon = new NotifyIcon
             {
                 Icon = CreateIcon(),
                 Text = "Windows Security Agent - Checking status...",
                 Visible = true
             };
+            _logger.LogInformation("Tray icon created and set to visible");
 
             // Create context menu
             var contextMenu = new ContextMenuStrip();
@@ -125,6 +167,15 @@ public class TrayMonitorService : IHostedService
             
             contextMenu.Items.Add(new ToolStripSeparator());
             
+            // Add URL access request option if access request manager is available
+            if (_accessRequestManager != null)
+            {
+                var requestUrlAccessItem = new ToolStripMenuItem("Request URL Access");
+                requestUrlAccessItem.Click += (s, e) => RequestUrlAccess();
+                contextMenu.Items.Add(requestUrlAccessItem);
+                contextMenu.Items.Add(new ToolStripSeparator());
+            }
+            
             var aboutItem = new ToolStripMenuItem("About");
             aboutItem.Click += (s, e) => ShowAbout();
             contextMenu.Items.Add(aboutItem);
@@ -135,6 +186,15 @@ public class TrayMonitorService : IHostedService
 
             _notifyIcon.ContextMenuStrip = contextMenu;
             _notifyIcon.DoubleClick += (s, e) => ShowAbout();
+            
+            // Show a welcome notification
+            _notifyIcon.ShowBalloonTip(
+                3000,
+                "ThreatStopper",
+                "Tray monitor started. Right-click the icon for options.",
+                ToolTipIcon.Info);
+            
+            _logger.LogInformation("Tray icon fully initialized with context menu");
         }
         catch (Exception ex)
         {
@@ -273,6 +333,30 @@ public class TrayMonitorService : IHostedService
     {
         try
         {
+            // Check if running as administrator
+            var currentPrincipal = new System.Security.Principal.WindowsPrincipal(
+                System.Security.Principal.WindowsIdentity.GetCurrent());
+            var isAdmin = currentPrincipal.IsInRole(
+                System.Security.Principal.WindowsBuiltInRole.Administrator);
+
+            if (!isAdmin)
+            {
+                var result = MessageBox.Show(
+                    "Starting the service requires administrator privileges.\n\n" +
+                    "Would you like to use the Services management console instead?\n\n" +
+                    "Click Yes to open Services (you can start the service manually there),\n" +
+                    "or click No to cancel.",
+                    "Administrator Privileges Required",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("services.msc");
+                }
+                return;
+            }
+
             using var service = new ServiceController(ServiceName);
             if (service.Status != ServiceControllerStatus.Running)
             {
@@ -301,6 +385,30 @@ public class TrayMonitorService : IHostedService
     {
         try
         {
+            // Check if running as administrator
+            var currentPrincipal = new System.Security.Principal.WindowsPrincipal(
+                System.Security.Principal.WindowsIdentity.GetCurrent());
+            var isAdmin = currentPrincipal.IsInRole(
+                System.Security.Principal.WindowsBuiltInRole.Administrator);
+
+            if (!isAdmin)
+            {
+                var result = MessageBox.Show(
+                    "Stopping the service requires administrator privileges.\n\n" +
+                    "Would you like to use the Services management console instead?\n\n" +
+                    "Click Yes to open Services (you can stop the service manually there),\n" +
+                    "or click No to cancel.",
+                    "Administrator Privileges Required",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("services.msc");
+                }
+                return;
+            }
+
             using var service = new ServiceController(ServiceName);
             if (service.Status == ServiceControllerStatus.Running)
             {
@@ -329,6 +437,144 @@ public class TrayMonitorService : IHostedService
             MessageBox.Show(
                 $"Failed to stop service: {ex.Message}",
                 "Windows Security Agent",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+    }
+
+    private void RequestUrlAccess()
+    {
+        try
+        {
+            if (_accessRequestManager == null)
+            {
+                MessageBox.Show(
+                    "Access request manager is not available.",
+                    "ThreatStopper",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (_hiddenForm == null)
+                return;
+
+            // Show URL input dialog on UI thread
+            _hiddenForm.BeginInvoke(new Action(() =>
+            {
+                // Create a simple input dialog
+                using var inputForm = new Form
+                {
+                    Text = "ThreatStopper - Request URL Access",
+                    Size = new Size(450, 150),
+                    StartPosition = FormStartPosition.CenterScreen,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                    TopMost = true,
+                    Icon = SystemIcons.Shield
+                };
+
+                var label = new Label
+                {
+                    Text = "Enter the URL or domain you need access to:",
+                    Location = new Point(20, 20),
+                    Size = new Size(400, 20),
+                    AutoSize = false
+                };
+
+                var urlTextBox = new TextBox
+                {
+                    Location = new Point(20, 50),
+                    Size = new Size(390, 23),
+                    Text = "https://"
+                };
+
+                var okButton = new Button
+                {
+                    Text = "OK",
+                    Location = new Point(250, 85),
+                    Size = new Size(75, 30),
+                    DialogResult = DialogResult.OK
+                };
+
+                var cancelButton = new Button
+                {
+                    Text = "Cancel",
+                    Location = new Point(335, 85),
+                    Size = new Size(75, 30),
+                    DialogResult = DialogResult.Cancel
+                };
+
+                inputForm.Controls.Add(label);
+                inputForm.Controls.Add(urlTextBox);
+                inputForm.Controls.Add(okButton);
+                inputForm.Controls.Add(cancelButton);
+                inputForm.AcceptButton = okButton;
+                inputForm.CancelButton = cancelButton;
+
+                if (inputForm.ShowDialog() == DialogResult.OK)
+                {
+                    var urlInput = urlTextBox.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(urlInput))
+                        return;
+
+                    // Normalize URL
+                    var url = urlInput;
+                    if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+                        !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    {
+                        url = "https://" + url;
+                    }
+
+                    // Extract domain name for display
+                    string domainName;
+                    try
+                    {
+                        var uri = new Uri(url);
+                        domainName = uri.Host;
+                    }
+                    catch
+                    {
+                        // If URL parsing fails, use the input as-is
+                        domainName = urlInput;
+                        url = urlInput;
+                    }
+
+                    // Show access request form
+                    using var form = new AccessRequestForm("Url", domainName);
+                    var result = form.ShowDialog();
+                    
+                    if (result == DialogResult.OK && form.Submitted)
+                    {
+                        // Submit the access request
+                        _ = Task.Run(async () =>
+                        {
+                            await _accessRequestManager.RequestAccessAsync(
+                                "Url",
+                                url,
+                                domainName,
+                                Environment.UserName,
+                                null,
+                                null);
+                        });
+                        
+                        // Show success notification
+                        _notifyIcon?.ShowBalloonTip(
+                            3000,
+                            "ThreatStopper - Request Submitted",
+                            $"Your access request for {domainName} has been submitted for review.",
+                            ToolTipIcon.Info);
+                    }
+                }
+            }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error requesting URL access");
+            MessageBox.Show(
+                $"Failed to submit URL access request: {ex.Message}",
+                "ThreatStopper",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
@@ -365,6 +611,104 @@ public class TrayMonitorService : IHostedService
                 "Windows Security Agent",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
+        }
+    }
+
+    private void OnAccessRequestNeeded(object? sender, AccessRequestEventArgs e)
+    {
+        try
+        {
+            // Show the access request form on the UI thread
+            if (_hiddenForm != null)
+            {
+                _hiddenForm.BeginInvoke(new Action(() =>
+                {
+                    using var form = new AccessRequestForm(e.ResourceType, e.ResourceName);
+                    var result = form.ShowDialog();
+                    
+                    if (result == DialogResult.OK && form.Submitted)
+                    {
+                        e.Justification = form.Justification;
+                        e.Complete(true);
+                        
+                        // Show success notification
+                        _notifyIcon?.ShowBalloonTip(
+                            3000,
+                            "ThreatStopper - Request Submitted",
+                            $"Your access request for {e.ResourceName} has been submitted for review.",
+                            ToolTipIcon.Info);
+                    }
+                    else
+                    {
+                        e.Complete(false);
+                    }
+                }));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error showing access request dialog");
+            e.Complete(false);
+        }
+    }
+
+    private void OnAccessApproved(object? sender, AccessApprovalEventArgs e)
+    {
+        try
+        {
+            // Show popup form on the UI thread
+            if (_hiddenForm != null)
+            {
+                _hiddenForm.BeginInvoke(new Action(() =>
+                {
+                    using var form = new AccessApprovalForm(e.ResourceType, e.ResourceName, e.ExpiresAt, true);
+                    form.ShowDialog();
+                    
+                    // Also show balloon tip for notification
+                    _notifyIcon?.ShowBalloonTip(
+                        5000,
+                        "ThreatStopper - Access Approved",
+                        $"Your request for {e.ResourceName} has been approved. You can now use this application.",
+                        ToolTipIcon.Info);
+                }));
+            }
+            else
+            {
+                // Fallback to balloon tip if form is not available
+                var expirationText = e.ExpiresAt.HasValue 
+                    ? $" (expires at {e.ExpiresAt:g})" 
+                    : " (indefinite)";
+                
+                _notifyIcon?.ShowBalloonTip(
+                    5000,
+                    "ThreatStopper - Access Approved",
+                    $"Your request for {e.ResourceName} has been approved{expirationText}. You can now use this application.",
+                    ToolTipIcon.Info);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error showing approval notification");
+        }
+    }
+
+    private void OnAccessDenied(object? sender, AccessApprovalEventArgs e)
+    {
+        try
+        {
+            var reasonText = !string.IsNullOrWhiteSpace(e.DenialReason)
+                ? $"\n\nReason: {e.DenialReason}"
+                : string.Empty;
+            
+            _notifyIcon?.ShowBalloonTip(
+                5000,
+                "Access Denied",
+                $"Your access request for {e.ResourceName} has been denied.{reasonText}",
+                ToolTipIcon.Warning);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error showing denial notification");
         }
     }
 }
